@@ -1311,7 +1311,7 @@ function simHunt(r, resumed){
         const s = sellersFor(q.car.mk, q.city, 'all', ['used']).find(x=>x.id!==MY_YARD) || SELLER.y2;
         q.found = {seller:s.id, price:round10((q.budget||CAT[q.cat]?.base||500)*rnd(.7,.95)), cond:'used', grade:'A', war:7, note:`لقيتها عند ${s.n}. حالتها ممتازة وصورتها لك، والسعر بعد التفاوض.`};
         q.status='found';
-        notify('buyer','hunt','الصيّاد لقى قطعتك', `${q.part}: ${sar(q.found.price)}. راجعها واعتمدها`, 'req-'+q.id);
+        notify('buyer','hunt','المندوب لقى قطعتك', `${q.part}: ${sar(q.found.price)}. راجعها واعتمدها`, 'req-'+q.id);
       } else if(st===1){ notify('buyer','hunt','بدأ البحث', `${h.n} قبل مهمة «${q.part}»`, 'req-'+q.id); }
       commit();
     });
@@ -1389,7 +1389,7 @@ function hdrHTML(){
   const seller = S.role==='seller';
   const nav = seller
     ? [['seller','لوحة التحكم'],['seller-requests','الطلبات الواردة'],['seller-inventory','المخزون'],['seller-orders','طلبات البيع'],['seller-wallet','المحفظة']]
-    : [['yards','التشاليح'],['hunt','الصيّاد'],['orders','طلباتي']];
+    : [['yards','التشاليح'],['hunt','المندوب'],['orders','طلباتي']];
   return `<header class="hdr"><div class="wrap">
     <div class="hdr-row">
       <a class="logo" href="#${seller?'seller':'home'}" aria-label="تشاليح المملكة، الرئيسية"><span class="logo-mark">${LOGO}</span><span><span class="logo-name" style="display:block">تشاليح المملكة</span><span class="logo-sub hide-m" style="display:block">${seller?'لوحة التشليح':'قطع الغيار بضمان المنصة'}</span></span></a>
@@ -1415,7 +1415,7 @@ function footerHTML(){
     <div class="stack" style="gap:10px"><a class="logo" href="#home"><span class="logo-mark">${LOGO}</span><span class="logo-name">تشاليح المملكة</span></a>
       <p class="small muted" style="max-width:40ch">منصة تربطك بالتشاليح ومحلات قطع الغيار في المملكة. الدفع عن طريقنا، والمبلغ ما يوصل للبائع إلا بعد ما تستلم قطعتك.</p>
       </div>
-    <div><h4>للمشتري</h4><a href="#parts">ابحث عن قطعة</a><a href="#request">اطلب من كل التشاليح</a><a href="#hunt">كلّف صيّاد</a><a href="#sell-car">بيع سيارتك التالفة</a></div>
+    <div><h4>للمشتري</h4><a href="#parts">ابحث عن قطعة</a><a href="#request">اطلب من كل التشاليح</a><a href="#hunt">كلّف مندوب</a><a href="#sell-car">بيع سيارتك التالفة</a></div>
     <div><h4>للتشاليح</h4><a href="#join">سجّل منشأتك</a><a href="#${S.myYard?'seller':'join'}">لوحة التشليح</a><a href="#yards">دليل التشاليح</a></div>
     <div><h4>حسابك</h4><a href="#orders">طلباتي</a><a href="#messages">الرسائل</a><a href="#account">سياراتي وإعداداتي</a></div>
   </div><p class="tiny faint" style="margin-top:22px">© 2026 تشاليح المملكة</p></div></footer>`;
@@ -1621,7 +1621,7 @@ function vHome(){
   <section class="paths" style="margin-top:34px" aria-label="طرق الحصول على القطعة">
     <a class="path main" href="#request"><span class="pi">${ic('send',24)}</span><div><h3>أرسل طلب لكل التشاليح</h3><p>اكتب اسم القطعة وتوصلك عروض الأسعار مع حالة القطعة والضمان. تقارن وتختار.</p><span class="go">اطلب الحين ${ic('fwd',16)}</span></div></a>
     <a class="path" href="#parts"><span class="pi">${ic('search',24)}</span><div><h3>ابحث في المخزون</h3><p>${fmt(live.length)} قطعة معروضة${car?`، منها ${compat.length} تركب على ${esc(car.md)} ${car.y}`:''}. تفهم «شمعة» و«اسطب» و«سلف».</p><span class="go">تصفح القطع ${ic('fwd',16)}</span></div></a>
-    <a class="path" href="#hunt"><span class="pi">${ic('binoc',24)}</span><div><h3>كلّف صيّاد</h3><p>قطعة نادرة؟ صيّاد موثّق يلف على التشاليح، يصورها لك، وما تدفع أجرته إلا إذا لقاها.</p><span class="go">كيف يشتغل ${ic('fwd',16)}</span></div></a>
+    <a class="path" href="#hunt"><span class="pi">${ic('binoc',24)}</span><div><h3>كلّف مندوب</h3><p>قطعة نادرة؟ مندوب موثّق يلف على التشاليح، يصورها لك، وما تدفع أجرته إلا إذا لقاها.</p><span class="go">كيف يشتغل ${ic('fwd',16)}</span></div></a>
   </section>
   <a href="#sell-car" class="callout-box" style="margin-top:14px;text-decoration:none;color:inherit;align-items:center">${ic('car',22)}<div class="grow"><b>عندك سيارة تالفة؟</b> <span class="muted">اعرضها على التشاليح وتوصلك عروض شراء، والسطحة عليهم.</span></div>${ic('fwd',18)}</a>
 
@@ -1766,7 +1766,7 @@ function vPart(id){
       <div class="row wrap" style="gap:14px;align-items:center">${ptag(p.price,true)}${oemSib&&p.cond!=='oem'?`<span class="small"><b class="num" style="color:var(--trust)">أرخص من الوكالة بـ ${sar(oemSib.price-p.price)}</b></span>`:''}</div>
       <div class="stack" style="gap:8px">
         <label class="radio-card" style="cursor:default"><span style="color:var(--ink-2)">${ic('store',20)}</span><div class="grow"><b class="small">استلام من ${esc(s.dist)}</b><div class="tiny muted">${esc(s.city)}</div></div><b class="small">مجاناً</b></label>
-        ${sameCity?`<label class="radio-card" style="cursor:default"><span style="color:var(--ink-2)">${ic('truck',20)}</span><div class="grow"><b class="small">توصيل داخل ${esc(s.city)}</b><div class="tiny muted">خلال 24 ساعة مع مندوب المنصة</div></div><b class="small num">${sar(SIZE_FEE[size].city)}</b></label>`
+        ${sameCity?`<label class="radio-card" style="cursor:default"><span style="color:var(--ink-2)">${ic('truck',20)}</span><div class="grow"><b class="small">توصيل داخل ${esc(s.city)}</b><div class="tiny muted">خلال 24 ساعة مع مندوب التوصيل</div></div><b class="small num">${sar(SIZE_FEE[size].city)}</b></label>`
           :`<label class="radio-card" style="cursor:default"><span style="color:var(--ink-2)">${ic('truck',20)}</span><div class="grow"><b class="small">شحن إلى ${esc(S.user.city)}</b><div class="tiny muted">2–4 أيام، مؤمّن ضد الكسر</div></div><b class="small num">${sar(SIZE_FEE[size].ship)}</b></label>`}
       </div>
       <div class="row wrap buy-row">
@@ -1904,7 +1904,7 @@ F.request = f => {
 
 /* ═══════════ REQUEST DETAIL (offers) ═══════════ */
 route(/^req-(\w+)$/, vReq);
-const REQ_ST = {open:['يستقبل عروض','p-trust live'],found:['الصيّاد لقاها','p-tag'],accepted:['تم القبول','p-mute'],expired:['انتهت مدته','p-mute'],cancelled:['ملغي','p-mute'],searching:['يدوّر','p-warn live']};
+const REQ_ST = {open:['يستقبل عروض','p-trust live'],found:['المندوب لقاها','p-tag'],accepted:['تم القبول','p-mute'],expired:['انتهت مدته','p-mute'],cancelled:['ملغي','p-mute'],searching:['يدوّر','p-warn live']};
 function bestOffer(offers){
   const live = offers.filter(o=>o.status==='pending'); if(live.length<2) return null;
   return live.map(o=>({o,sc:o.price/(1+o.war/365*.35)})).sort((a,b)=>a.sc-b.sc)[0].o.id;
@@ -2000,7 +2000,7 @@ function vHunt(){
   UI.hp = UI.hp || [];
   const mine = S.requests.filter(r=>r.kind==='hunt' && r.buyer==='me');
   return `
-  <div class="page-h"><div><h1>الصيّاد يدوّر عنك</h1><p class="sub">للقطع النادرة أو إذا ما عندك وقت تلف. صيّاد موثّق يزور التشاليح، يصور القطعة ويرسلها لك، وأنت تعتمدها قبل ما تدفع.</p></div></div>
+  <div class="page-h"><div><h1>المندوب يدوّر عنك</h1><p class="sub">للقطع النادرة أو إذا ما عندك وقت تلف. مندوب موثّق يزور التشاليح، يصور القطعة ويرسلها لك، وأنت تعتمدها قبل ما تدفع.</p></div></div>
   ${mine.length?`<div class="list" style="margin-bottom:22px">${mine.map(reqRow).join('')}</div>`:''}
   <form class="layout-2" data-f="hunt" novalidate>
     <div class="card pad-l">
@@ -2012,9 +2012,9 @@ function vHunt(){
         <div class="grid2"><div class="field"><label for="hn-budget">أعلى سعر للقطعة</label><input class="inp num" id="hn-budget" name="budget" type="number" inputmode="numeric" placeholder="بالريال"></div>
           <div class="field"><label for="hn-city">المدينة</label><select class="sel" id="hn-city" name="city">${selOpts(CITIES,S.user.city)}</select></div></div>
       </div>
-      <div class="form-sec"><h3><span class="n">3</span>اختر الصيّاد</h3>
+      <div class="form-sec"><h3><span class="n">3</span>اختر المندوب</h3>
         <div class="stack" style="gap:10px">
-          <label class="hunter"><input type="radio" name="hunter" value="" checked><span class="hav">${ic('zap',20)}</span><div><b>أول صيّاد متاح في مدينتك</b><div class="small muted">أسرع خيار، يقبلها عادةً خلال دقائق</div></div><b class="num">45 ⃁</b></label>
+          <label class="hunter"><input type="radio" name="hunter" value="" checked><span class="hav">${ic('zap',20)}</span><div><b>أول مندوب متاح في مدينتك</b><div class="small muted">أسرع خيار، يقبلها عادةً خلال دقائق</div></div><b class="num">45 ⃁</b></label>
 
         </div></div>
     </div>
@@ -2022,7 +2022,7 @@ function vHunt(){
       <div class="card pad-l stack"><b>كيف يشتغل</b>
         <div class="tl">
           <div class="tl-i"><span class="tl-d"><b class="mono" style="font-size:12px">1</b></span><div><div class="tl-t">تنشر المهمة</div><div class="tl-s">مجاناً، وما ينخصم منك شي</div></div></div>
-          <div class="tl-i"><span class="tl-d"><b class="mono" style="font-size:12px">2</b></span><div><div class="tl-t">الصيّاد يلف التشاليح</div><div class="tl-s">تتابع وين زار أول بأول</div></div></div>
+          <div class="tl-i"><span class="tl-d"><b class="mono" style="font-size:12px">2</b></span><div><div class="tl-t">المندوب يلف التشاليح</div><div class="tl-s">تتابع وين زار أول بأول</div></div></div>
           <div class="tl-i"><span class="tl-d"><b class="mono" style="font-size:12px">3</b></span><div><div class="tl-t">يرسلك القطعة بالصور والسعر</div><div class="tl-s">تعتمدها أو تطلب يكمل البحث</div></div></div>
           <div class="tl-i"><span class="tl-d"><b class="mono" style="font-size:12px">4</b></span><div><div class="tl-t">تدفع القطعة + أجرته</div><div class="tl-s">بنفس ضمان المنصة. إذا ما لقاها ما تدفع شي</div></div></div>
         </div></div>
@@ -2038,42 +2038,42 @@ F.hunt = f => {
   const hid = f.hunter.value || null; const cat = guessCat(part)||'body';
   const r = {id:uid('r'),kind:'hunt',buyer:'me',car:cc.car,carId:cc.carId,part,cat,d:CAT[cat].d,conds:['used','after','oem'],budget:+f.budget.value||0,city:f.city.value,reach:'city',notes:f.desc.value.trim(),photos:UI.hp.slice(),
     status:'open',t:now(),exp:now()+72*HR,hunter:hid,fee:hid?HUNTER[hid].fee:45,stage:0,events:[{s:'posted',t:now(),txt:'نشرت المهمة'}],offers:[]};
-  S.requests.unshift(r); UI.hp=[]; save(); toast('انتشرت المهمة. بنبلغك أول ما يقبلها صيّاد'); go('req-'+r.id); simHunt(r);
+  S.requests.unshift(r); UI.hp=[]; save(); toast('انتشرت المهمة. بنبلغك أول ما يقبلها مندوب'); go('req-'+r.id); simHunt(r);
 };
 function vHuntDetail(r){
   const h = r.hunter ? HUNTER[r.hunter] : null; const fd = r.found;
-  const st = r.status==='open' ? (r.stage===0?['ننتظر صيّاد','p-warn live']:['يدوّر الحين','p-warn live']) : REQ_ST[r.status]||REQ_ST.open;
+  const st = r.status==='open' ? (r.stage===0?['ننتظر مندوب','p-warn live']:['يدوّر الحين','p-warn live']) : REQ_ST[r.status]||REQ_ST.open;
   const icons = {posted:'send',assigned:'user',visit:'pin',found:'check',resume:'refresh'};
   return `
-  <a class="back" href="#hunt">${ic('back',18)}الصيّاد</a>
+  <a class="back" href="#hunt">${ic('back',18)}المندوب</a>
   <div class="page-h"><div><div class="row" style="gap:10px;margin-bottom:6px"><span class="pill ${st[1]}">${st[0]}</span></div><h1>${esc(r.part)}</h1><p class="sub">${esc(r.car.mk)} ${esc(r.car.md)} ${r.car.y} · ${esc(r.city)}${r.budget?` · أعلى سعر ${sar(r.budget)}`:''}</p></div></div>
   <div class="layout-2">
     <section class="stack" style="gap:16px;min-width:0">
-      ${fd&&r.status==='found'?`<div class="found"><div class="found-h">${ic('check',18)}${h?esc(h.n):'الصيّاد'} لقى القطعة</div><div class="pad stack">
+      ${fd&&r.status==='found'?`<div class="found"><div class="found-h">${ic('check',18)}${h?esc(h.n):'المندوب'} لقى القطعة</div><div class="pad stack">
         <div class="row" style="align-items:flex-start;gap:14px"><div style="width:120px;flex-shrink:0">${plate(r.d)}</div><div class="stack" style="gap:6px;min-width:0">
           <div class="row wrap" style="gap:8px">${condBadge(fd.cond,fd.grade)}<span class="small">${warTxt(fd.war)}</span></div>
           <div class="small">عند <a href="#yard-${fd.seller}" class="b">${esc(SELLER[fd.seller].n)}</a> · ${esc(SELLER[fd.seller].city)}</div>
           <p class="small muted">«${esc(fd.note)}»</p></div></div>
         <div class="total-row"><span>سعر القطعة</span><b class="num">${sar(fd.price)}</b></div>
-        <div class="total-row"><span>أجرة الصيّاد</span><b class="num">${sar(r.fee)}</b></div>
+        <div class="total-row"><span>أجرة المندوب</span><b class="num">${sar(r.fee)}</b></div>
         <div class="row wrap"><button class="btn btn-trust btn-lg grow" data-a="huntBuy" data-id="${r.id}">${ic('lock',18)}اعتمدها وادفع بضمان المنصة</button><button class="btn btn-ghost btn-lg" data-a="huntMore" data-id="${r.id}">كمّل البحث</button></div>
       </div></div>`:''}
       <div class="card pad-l"><h3 style="margin-bottom:16px">سير المهمة</h3><div class="tl">
         ${r.events.map((e,i)=>`<div class="tl-i ${i===r.events.length-1&&r.status==='open'?'now':'done'}"><span class="tl-d">${ic(icons[e.s]||'dots',15)}</span><div><div class="tl-t">${esc(e.txt)}</div><div class="tl-s">${ago(e.t)}</div></div></div>`).join('')}
-        ${r.status==='open'?`<div class="tl-i"><span class="tl-d"><span class="spin" style="width:14px;height:14px"></span></span><div><div class="tl-t faint">${r.stage===0?'ننتظر صيّاد يقبل المهمة':'يزور التشاليح'}</div></div></div>`:''}
+        ${r.status==='open'?`<div class="tl-i"><span class="tl-d"><span class="spin" style="width:14px;height:14px"></span></span><div><div class="tl-t faint">${r.stage===0?'ننتظر مندوب يقبل المهمة':'يزور التشاليح'}</div></div></div>`:''}
       </div></div>
       ${r.status==='accepted'&&r.orderId?`<a class="btn btn-ink" href="#order-${r.orderId}">تتبع الطلب</a>`:''}
     </section>
     <aside class="stack sticky">
-      ${h?`<div class="card pad stack"><div class="row"><span class="hav">${h.ab}</span><div class="grow"><b>${esc(h.n)}</b><div class="small muted">صيّاد · ${esc(h.city)}</div></div></div><p class="small muted">${esc(h.note)}</p></div>`
-          :`<div class="card pad small muted">بنختار لك أول صيّاد متاح في ${esc(r.city)}.</div>`}
-      <div class="safe-note">${ic('lock',18)}<span>أجرة الصيّاد ${sar(r.fee)} تندفع مع القطعة فقط إذا اعتمدتها. إذا ما لقاها خلال 3 أيام، المهمة تنتهي بدون أي رسوم.</span></div>
+      ${h?`<div class="card pad stack"><div class="row"><span class="hav">${h.ab}</span><div class="grow"><b>${esc(h.n)}</b><div class="small muted">مندوب · ${esc(h.city)}</div></div></div><p class="small muted">${esc(h.note)}</p></div>`
+          :`<div class="card pad small muted">بنختار لك أول مندوب متاح في ${esc(r.city)}.</div>`}
+      <div class="safe-note">${ic('lock',18)}<span>أجرة المندوب ${sar(r.fee)} تندفع مع القطعة فقط إذا اعتمدتها. إذا ما لقاها خلال 3 أيام، المهمة تنتهي بدون أي رسوم.</span></div>
       ${r.status==='open'||r.status==='found'?`<button class="btn btn-quiet btn-sm" data-a="cancelReq" data-id="${r.id}">إلغاء المهمة</button>`:''}
     </aside>
   </div>`;
 }
 A.huntBuy = el => { UI.co = {kind:'hunt', reqId:el.dataset.id}; go('checkout'); };
-A.huntMore = el => { const r=findReq(el.dataset.id); r.status='open'; r.stage=3; r.found=null; r.events.push({s:'resume',t:now(),txt:'طلبت يكمل البحث'}); commit(); simHunt(r); toast('بيكمل الصيّاد البحث'); };
+A.huntMore = el => { const r=findReq(el.dataset.id); r.status='open'; r.stage=3; r.found=null; r.events.push({s:'resume',t:now(),txt:'طلبت يكمل البحث'}); commit(); simHunt(r); toast('بيكمل المندوب البحث'); };
 
 /* ═══════════ SELL CAR ═══════════ */
 route(/^sell-car$/, vSellCar, true);
@@ -2131,7 +2131,7 @@ function coCalc(it){
   const addr = S.addresses.find(a=>a.id===co.addr) || S.addresses[0];
   const destCity = addr ? addr.city : S.user.city;
   const opts = [['pickup',`استلام من ${s.dist}، ${s.city}`,0,'تستلمها بنفسك من الموقع وتفحصها قبل ما تطلع']];
-  if(s.city===destCity) opts.push(['city',`توصيل داخل ${s.city}`,SIZE_FEE[size].city,'خلال 24 ساعة مع مندوب المنصة']);
+  if(s.city===destCity) opts.push(['city',`توصيل داخل ${s.city}`,SIZE_FEE[size].city,'خلال 24 ساعة مع مندوب التوصيل']);
   else opts.push(['ship',`شحن إلى ${destCity}`,SIZE_FEE[size].ship,'2–4 أيام، مؤمّن ضد الكسر']);
   if(!co.deliv || !opts.some(o=>o[0]===co.deliv)) co.deliv = opts[1][0];
   const delivFee = opts.find(o=>o[0]===co.deliv)[2];
@@ -2142,7 +2142,7 @@ function coCalc(it){
 function coSummary(it, k){
   return `<b>ملخص الدفع</b>
     <div><div class="total-row"><span>سعر القطعة</span><span class="num">${sar(it.price)}</span></div>
-    ${it.hunterFee?`<div class="total-row"><span>أجرة الصيّاد</span><span class="num">${sar(it.hunterFee)}</span></div>`:''}
+    ${it.hunterFee?`<div class="total-row"><span>أجرة المندوب</span><span class="num">${sar(it.hunterFee)}</span></div>`:''}
     <div class="total-row"><span>${UI.co.deliv==='pickup'?'الاستلام':'التوصيل'}</span><span class="num">${k.delivFee?sar(k.delivFee):'مجاناً'}</span></div>
     <div class="total-row"><span>رسوم حماية المشتري <button type="button" class="link tiny" data-a="feeInfo">وش هي؟</button></span><span class="num">${sar(k.fee)}</span></div>
     <div class="total-row grand"><span>الإجمالي</span><span class="num">${sar(k.total)}</span></div>
@@ -2182,7 +2182,7 @@ C.coAddr = el => { UI.co.addr = el.value; render(true); };
 C.coMethod = el => { UI.co.method = el.value; coRefresh(); };
 A.back = () => history.back();
 A.feeInfo = () => modal(`${dlgHead('رسوم حماية المشتري')}<div class="dlg-b stack"><p>2% من سعر القطعة (أقل شي 5 ⃁ وأعلى شي 49 ⃁). تغطي:</p><ul style="margin:0;padding-inline-start:20px;line-height:2"><li>حجز المبلغ لين تستلم وتفحص</li><li>مراجعة النزاعات واسترجاع المبلغ إذا القطعة ما طابقت</li><li>التحقق من التشاليح وسجلاتهم التجارية</li></ul><p class="small muted">ما تنخصم من البائع، وما تنضاف إذا لغيت الطلب قبل الشحن.</p></div>`,'narrow');
-A.addAddr = () => modal(`${dlgHead('عنوان جديد','نستخدم العنوان الوطني المختصر عشان المندوب يوصلك بدقة')}<form data-f="addr" novalidate><div class="dlg-b stack">
+A.addAddr = () => modal(`${dlgHead('عنوان جديد','نستخدم العنوان الوطني المختصر عشان مندوب التوصيل يوصلك بدقة')}<form data-f="addr" novalidate><div class="dlg-b stack">
   <div class="field"><label for="ad-label">اسم العنوان</label><input class="inp" id="ad-label" name="label" placeholder="مثال: البيت، الورشة"></div>
   <div class="grid2"><div class="field"><label for="ad-city">المدينة</label><select class="sel" id="ad-city" name="city">${selOpts(CITIES,S.user.city)}</select></div><div class="field"><label for="ad-dist">الحي</label><input class="inp" id="ad-dist" name="dist" placeholder="حي النرجس"></div></div>
   <div class="field"><label for="ad-short">العنوان الوطني المختصر</label><input class="inp mono" id="ad-short" name="short" dir="ltr" maxlength="9" placeholder="RRRD2929" style="text-transform:uppercase"><span class="hint">4 حروف و4 أرقام. تلقاه في تطبيق سبل أو أبشر</span><span class="err" id="ad-err"></span></div>
@@ -2224,7 +2224,7 @@ function orderRow(o, seller){
 }
 function reqRow(r){
   const st = r.kind==='hunt' && r.status==='open' ? ['يدوّر','p-warn live'] : (REQ_ST[r.status]||REQ_ST.open);
-  const meta = r.kind==='hunt' ? `صيّاد${r.hunter?': '+esc(HUNTER[r.hunter].n):''}` : r.kind==='vehicle' ? `${r.offers.length} ${r.offers.length===2?'عرضين':'عروض'} شراء` : `${r.offers.length} ${r.offers.length===1?'عرض':r.offers.length===2?'عرضين':'عروض'}`;
+  const meta = r.kind==='hunt' ? `مندوب${r.hunter?': '+esc(HUNTER[r.hunter].n):''}` : r.kind==='vehicle' ? `${r.offers.length} ${r.offers.length===2?'عرضين':'عروض'} شراء` : `${r.offers.length} ${r.offers.length===1?'عرض':r.offers.length===2?'عرضين':'عروض'}`;
   return `<a class="li" href="#req-${r.id}"><div class="th">${plate(r.d||'engine')}</div>
     <div style="min-width:0"><div class="t ell">${esc(r.part)}</div><div class="s">${r.kind==='vehicle'?'بيع سيارة':esc(r.car.md)+' '+r.car.y} · ${meta} · ${ago(r.t)}</div></div>
     <div class="end"><span class="pill ${st[1]}">${st[0]}</span></div></a>`;
@@ -2303,7 +2303,7 @@ function vOrder(id){
     <aside class="stack sticky">
       <div class="card pad stack"><b>الفاتورة</b><div>
         <div class="total-row"><span>سعر القطعة</span><span class="num">${sar(o.price)}</span></div>
-        ${o.hunterFee?`<div class="total-row"><span>أجرة الصيّاد</span><span class="num">${sar(o.hunterFee)}</span></div>`:''}
+        ${o.hunterFee?`<div class="total-row"><span>أجرة المندوب</span><span class="num">${sar(o.hunterFee)}</span></div>`:''}
         <div class="total-row"><span>${o.deliv==='pickup'?'الاستلام':'التوصيل'}</span><span class="num">${o.delivFee?sar(o.delivFee):'مجاناً'}</span></div>
         <div class="total-row"><span>رسوم حماية المشتري</span><span class="num">${sar(o.fee)}</span></div>
         <div class="total-row grand"><span>الإجمالي</span><span class="num">${sar(o.total)}</span></div>
@@ -2403,7 +2403,7 @@ function replyFor(text, side){
   if(side==='seller') return /متى|وين|شحن/.test(n) ? 'تمام، أنتظر رقم الشحنة.' : 'تمام، مشكور.';
   if(/سعر|كم|بكم|خصم|اخر/.test(n)) return 'السعر مثل ما هو بالعرض. إذا أخذت أكثر من قطعة نعطيك خصم.';
   if(/متوفر|موجود|عندك/.test(n)) return 'إيه متوفرة الحين. اطلبها من صفحة القطعة والمبلغ يبقى محجوز في المنصة لين تستلم.';
-  if(/توصيل|شحن|مندوب|يوصل/.test(n)) return 'نسلمها لمندوب المنصة اليوم، وتوصلك داخل المدينة خلال 24 ساعة.';
+  if(/توصيل|شحن|مندوب|يوصل/.test(n)) return 'نسلمها لمندوب التوصيل اليوم، وتوصلك داخل المدينة خلال 24 ساعة.';
   if(/صور|صوره|فيديو/.test(n)) return 'أبشر، أصورها لك الحين من كل الجهات.';
   if(/ضمان|ترجيع|رجع/.test(n)) return 'عليها ضمان تركيب. إذا ما اشتغلت ترجعها خلال مدة الفحص.';
   if(/تركب|يركب|توافق|هيكل/.test(n)) return 'أرسل لي رقم الهيكل وأتأكد لك من رقم القطعة.';
@@ -2715,7 +2715,7 @@ function sOrderCard(o){
   const end = o.deliveredAt ? o.deliveredAt+48*HR : 0;
   let acts = '';
   if(o.status==='paid') acts = `<button class="btn btn-ink btn-sm" data-a="sPrep" data-id="${o.id}">${ic('box',16)}بدأت التجهيز</button>`;
-  else if(o.status==='preparing') acts = `<button class="btn btn-trust btn-sm" data-a="sShip" data-id="${o.id}">${ic('truck',16)}${o.deliv==='pickup'?'جاهزة للاستلام':'سلّمتها للمندوب'}</button>`;
+  else if(o.status==='preparing') acts = `<button class="btn btn-trust btn-sm" data-a="sShip" data-id="${o.id}">${ic('truck',16)}${o.deliv==='pickup'?'جاهزة للاستلام':'سلّمتها لمندوب التوصيل'}</button>`;
   else if(o.status==='delivered') acts = `<span class="small muted">مدة الفحص: باقي ${left(end)}</span>`;
   else if(o.status==='disputed') acts = o.dispute&&o.dispute.reply ? '<span class="small muted">ردّك وصل لفريق المراجعة</span>' : `<button class="btn btn-danger btn-sm" data-a="sReply" data-id="${o.id}">${ic('flag',16)}رد على النزاع</button>`;
   return `<article class="offer" style="--oc:80px">
@@ -2740,7 +2740,7 @@ A.sShip = el => {
   const o=findOrder(el.dataset.id); setStatus(o,'shipped'); o.track = o.deliv==='pickup'?'':'SP-'+Math.floor(10000+Math.random()*89999);
   if(o.buyer==='me') notify('buyer','truck', o.deliv==='pickup'?'قطعتك جاهزة للاستلام':'طلبك في الطريق', `TS-${o.no} ${o.item.n}`, 'order-'+o.id);
   else o.fastRelease = true;
-  commit(); simOrder(o); toast(o.deliv==='pickup'?'بلغنا المشتري إن القطعة جاهزة':'انسلمت للمندوب. رقم الشحنة '+o.track);
+  commit(); simOrder(o); toast(o.deliv==='pickup'?'بلغنا المشتري إن القطعة جاهزة':'انسلمت لمندوب التوصيل. رقم الشحنة '+o.track);
 };
 A.sFast = el => { const o=findOrder(el.dataset.id); releaseOrder(o,'أكد المشتري سلامة القطعة'); commit(); };
 A.sReply = el => { const o=findOrder(el.dataset.id); modal(`${dlgHead('رد على النزاع',`TS-${o.no} · ${esc(o.dispute.reason)}`)}<form data-f="sReply" data-id="${o.id}"><div class="dlg-b stack"><p class="small muted">«${esc(o.dispute.desc)}»</p><textarea class="txa" name="reply" placeholder="اشرح وجهة نظرك، وأرفق صور القطعة قبل الشحن إذا عندك" aria-label="ردك"></textarea></div><div class="dlg-f"><button class="btn btn-ink">أرسل الرد</button><button type="button" class="btn btn-ghost" data-a="close">تراجع</button></div></form>`); };
