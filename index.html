@@ -858,7 +858,7 @@ const SYN = [
 /* sellers: type yard = تشليح، store = محل قطع جديدة */
 const SELLERS = [
   {id:'y1',n:'تشليح الوطن',ab:'و',type:'yard',city:'الرياض',dist:'حي السلي',km:8,rating:4.8,reviews:412,resp:9,verified:true,since:2014,deals:1840,mk:['تويوتا','لكزس','هيونداي'],
-   about:'تشليح متخصص في تويوتا ولكزس وهيونداي من 2014. كل قطعة مفحوصة ومصورة قبل النشر، والتوصيل داخل الرياض نفس اليوم.'},
+   about:'تشليح متخصص في تويوتا ولكزس وهيونداي. كل قطعة مفحوصة ومصورة قبل النشر، والتوصيل داخل الرياض نفس اليوم.'},
   {id:'y2',n:'تشليح النخبة للسيارات اليابانية',ab:'ن',type:'yard',city:'الرياض',dist:'حي المصانع',km:14,rating:4.7,reviews:268,resp:14,verified:true,since:2016,deals:1120,mk:['تويوتا','نيسان','هوندا'],
    about:'نستقبل سيارات حوادث يابانية أسبوعياً. نفحص المكائن والفتيسات على جهاز قبل البيع.'},
   {id:'y3',n:'تشاليح الشرقية الحديثة',ab:'ش',type:'yard',city:'الدمام',dist:'الصناعية الثانية',km:390,rating:4.6,reviews:190,resp:22,verified:true,since:2012,deals:960,mk:['جي إم سي','شفروليه','فورد'],
@@ -879,7 +879,7 @@ const SELLERS = [
    about:'أول تشليح متخصص في السيارات الصينية بجدة.'},
 ];
 const SELLER = Object.fromEntries(SELLERS.map(s=>[s.id,s]));
-const MY_YARD = 'y1';
+let MY_YARD = 'me';
 
 const HUNTERS = [
   {id:'h1',n:'سلطان القحطاني',ab:'س',city:'الرياض',rating:4.9,jobs:312,avg:'3 ساعات',fee:50,note:'يعرف تشاليح السلي والمصانع زاوية زاوية'},
@@ -1070,7 +1070,7 @@ function guardText(t){
 const renderMsgText = t => esc(t).replace(/⟦رقم مخفي⟧/g,'<span class="masked">رقم مخفي</span>').replace(/\n/g,'<br>');
 
 /* ═══════════ store ═══════════ */
-const KEY='tashaleeh.v4';
+const KEY='tashaleeh.v5';
 let S;
 const UI = {q:'', fit:true, cond:'all', cats:[], city:'', pmin:'', pmax:'', war:false, verified:false, sort:'rel', photos:[], co:null, ordersTab:'orders', yCity:'', yMk:'', yType:'', ySort:'near', invQ:'', sreqTab:'new', joinStep:1, join:{}, drop:false, chatImg:null, notifTab:'all'};
 let CUR = {r:'', fn:null};
@@ -1078,79 +1078,22 @@ const AFTER = [];
 
 function seedState(){
   const t = now();
-  const parts = PARTS_SEED.map(p=>({...p, ts:t-p.age*DAY, status:'live', photos:[]}));
-  const P = id => parts.find(p=>p.id===id);
-  const snap = (p, extra) => ({partId:p.id, n:p.n, d:p.d, cond:p.cond, grade:p.grade||'', oem:p.oem, cat:p.cat, war:p.war, ...extra});
-  const orders = [
-    mkOrder({id:'o24816', no:24816, buyer:'me', seller:'y2', item:snap(P('p7')), price:1350, deliv:'city', delivFee:35, method:'mada', addr:'a1',
-      status:'shipped', track:'SP-88214', ev:[['paid',t-26*HR],['preparing',t-20*HR],['shipped',t-3*HR]]}),
-    mkOrder({id:'o24790', no:24790, buyer:'me', seller:'y1', item:{n:'مساعدات خلفية يوكن (زوج)',d:'shock',cond:'used',grade:'A',oem:'84176...',cat:'suspension',war:14}, price:540, deliv:'pickup', delivFee:0, method:'applepay', addr:null,
-      status:'released', rated:5, ev:[['paid',t-14*DAY],['preparing',t-14*DAY+2*HR],['shipped',t-13*DAY],['delivered',t-13*DAY+3*HR],['released',t-12*DAY]]}),
-    mkOrder({id:'o24818', no:24818, buyer:'خالد ع.', buyerCity:'جدة', seller:'y1', item:snap(P('p15')), price:1900, deliv:'ship', delivFee:220, method:'mada',
-      status:'paid', ev:[['paid',t-50*MIN]]}),
-    mkOrder({id:'o24811', no:24811, buyer:'فهد م.', buyerCity:'الرياض', seller:'y1', item:{n:'مراية يمين لكزس ES مع كاميرا',d:'mirror',cond:'used',grade:'A',oem:'87910-33...',cat:'body',war:7}, price:880, deliv:'city', delivFee:35, method:'stcpay',
-      status:'delivered', ev:[['paid',t-3*DAY],['preparing',t-3*DAY+HR],['shipped',t-2*DAY],['delivered',t-20*HR]]}),
-  ];
-  parts.find(p=>p.id==='p15').qty = 0; parts.find(p=>p.id==='p15').status='sold';
-  const ledger = [];
-  const credits=[[13,2],[12,1],[11,3],[10,0],[9,2],[8,4],[7,1],[6,2],[5,3],[4,1],[3,5],[2,2],[1,3],[0,1]];
-  const amts=[420,980,1650,310,760,2200,540,1180,690,3900,860,1450,720,2600,380,950,1240,560,1890,470,880,1320,640,2100,990,410,1760,530,1150,840];
-  let k=0;
-  credits.forEach(([d,n])=>{ for(let i=0;i<n;i++){ const gross=amts[k++%amts.length]; ledger.push({id:uid('l'),t:t-d*DAY-(i+1)*2*HR,kind:'credit',amt:Math.round(gross*.93),txt:'صافي بيع قطعة (بعد عمولة 7%)',ref:'TS-'+(24700+k)}); } });
-  ledger.push({id:uid('l'),t:t-9*DAY,kind:'withdraw',amt:9000,txt:'سحب إلى الحساب البنكي',status:'done'});
-  ledger.push({id:uid('l'),t:t-2*DAY,kind:'withdraw',amt:6500,txt:'سحب إلى الحساب البنكي',status:'done'});
+  const parts = PARTS_SEED.map(p=>({...p, ts:t-p.age*DAY, status:'live', photos:[], views:0}));
   return {
-    v:4, authed:true, role:'buyer', theme:'system', skin:'green', seq:24819,
-    user:{name:'عبدالله السبيعي', phone:'0551234567', city:'الرياض'},
-    garage:[{id:'c1',mk:'تويوتا',md:'كامري',y:2019,eng:'2.5 لتر',vin:SAMPLE_VIN},{id:'c2',mk:'جي إم سي',md:'يوكن',y:2018,eng:'5.3 لتر',vin:'1GKS2BKC1JR184520'}],
-    car:'c1',
-    addresses:[{id:'a1',label:'البيت',city:'الرياض',dist:'حي النرجس',short:'RNRA3284'},{id:'a2',label:'الورشة',city:'الرياض',dist:'الصناعية الجديدة',short:'RSAB7710'}],
-    favs:['p13','p23'],
-    alerts:[{id:'al1',q:'كبوت كامري',carId:'c1',t:t-2*DAY}],
+    v:5, authed:false, role:'buyer', theme:'system', skin:'green', seq:10001,
+    user:{name:'', phone:'', city:'الرياض'},
+    garage:[], car:null, addresses:[], favs:[], alerts:[],
     parts,
     requests:[
-      {id:'r1',kind:'part',buyer:'me',car:{mk:'تويوتا',md:'كامري',y:2019},part:'كبوت كامري لون أبيض لؤلؤي 070',cat:'body',d:'hood',side:'',conds:['used','after'],budget:900,city:'الرياض',reach:'region',
-       notes:'أبيه بدون صبغ إذا أمكن',photos:[],status:'open',t:t-3*HR,exp:t+45*HR,sentTo:9,views:23,simLeft:1,
-       offers:[
-        {id:'f1',seller:'y1',price:850,cond:'used',grade:'A',war:7,eta:'جاهز للاستلام اليوم',note:'كبوت أصلي من كامري 2019 حادث خلفي، لونه 070 بدون صبغ.',t:t-2.6*HR,status:'pending'},
-        {id:'f2',seller:'y2',price:720,cond:'used',grade:'B',war:7,eta:'توصيل خلال 24 ساعة',note:'فيه طعجة صغيرة بالطرف معدلة بدون معجون.',t:t-2.1*HR,status:'pending'},
-        {id:'f3',seller:'y5',price:1180,cond:'after',war:90,eta:'شحن خلال يومين',note:'جديد تجاري بدون صبغ (أساس رمادي). الصبغ عليك.',t:t-1.2*HR,status:'pending'},
-       ]},
-      {id:'r2',kind:'hunt',buyer:'me',car:{mk:'جي إم سي',md:'يوكن',y:2018},part:'كشاف ضباب أمامي يسار يوكن',cat:'lights',d:'headlight',side:'يسار',conds:['used','after','oem'],budget:350,city:'الرياض',reach:'all',
-       notes:'الأصلي اللي فيه إطار كروم',photos:[],status:'found',t:t-26*HR,exp:t+22*HR,hunter:'h4',fee:45,stage:4,
-       events:[{s:'posted',t:t-26*HR,txt:'نشرت المهمة'},{s:'assigned',t:t-25.5*HR,txt:'قبل عبدالإله الدوسري المهمة'},{s:'visit',t:t-22*HR,txt:'زار تشاليح الشرقية الحديثة: ما توفرت بالإطار الكروم'},{s:'visit',t:t-6*HR,txt:'زار 3 تشاليح في الصناعية الثانية'},{s:'found',t:t-1.5*HR,txt:'لقى القطعة وصورها'}],
-       offers:[],found:{seller:'y3',price:260,cond:'used',grade:'A',war:7,note:'الكشاف الأصلي بالإطار الكروم، بدون شعر في العدسة. موجود عند تشاليح الشرقية الحديثة (وصلتهم سيارة جديدة اليوم).'}},
       {id:'x1',kind:'part',buyer:'other',buyerName:'مشتري من الرياض',car:{mk:'تويوتا',md:'هايلكس',y:2021},part:'صدام خلفي هايلكس كروم',cat:'body',d:'bumper',conds:['used'],budget:800,city:'الرياض',reach:'city',notes:'',status:'open',t:t-2*HR,exp:t+46*HR,others:2,offers:[]},
       {id:'x2',kind:'part',buyer:'other',buyerName:'مشتري من الرياض',car:{mk:'لكزس',md:'ES',y:2020},part:'شمعة أمامية يسار لكزس ES',cat:'lights',d:'headlight',conds:['used','oem'],budget:1500,city:'الرياض',reach:'region',notes:'الشمعة الثلاثية LED',status:'open',t:t-40*MIN,exp:t+47*HR,others:1,offers:[]},
       {id:'x3',kind:'part',buyer:'other',buyerName:'مشتري من الخرج',car:{mk:'هيونداي',md:'أزيرا',y:2018},part:'كمبروسر مكيف أزيرا 3.0',cat:'cooling',d:'compressor',conds:['used','after'],budget:900,city:'الرياض',reach:'region',notes:'',status:'open',t:t-5*HR,exp:t+43*HR,others:3,offers:[]},
-      {id:'x4',kind:'part',buyer:'other',buyerName:'مشتري من بريدة',car:{mk:'تويوتا',md:'كامري',y:2017},part:'مكينة كامري 2.5 (2AR-FE)',cat:'engine',d:'engine',conds:['used'],budget:5500,city:'بريدة',reach:'all',notes:'أبيها مع الضمان',status:'open',t:t-8*HR,exp:t+40*HR,others:4,
-       offers:[{id:'f9',seller:'y1',price:5200,cond:'used',grade:'A',war:30,eta:'شحن خلال يومين',note:'ممشى 92 ألف، مجربة.',t:t-7*HR,status:'pending'}]},
+      {id:'x4',kind:'part',buyer:'other',buyerName:'مشتري من بريدة',car:{mk:'تويوتا',md:'كامري',y:2017},part:'مكينة كامري 2.5 (2AR-FE)',cat:'engine',d:'engine',conds:['used'],budget:5500,city:'بريدة',reach:'all',notes:'أبيها مع الضمان',status:'open',t:t-8*HR,exp:t+40*HR,others:4,offers:[]},
+      {id:'x5',kind:'part',buyer:'other',buyerName:'مشتري من جدة',car:{mk:'نيسان',md:'باترول',y:2019},part:'دينمو باترول V8',cat:'electric',d:'alternator',conds:['used','after'],budget:700,city:'جدة',reach:'all',notes:'',status:'open',t:t-3*HR,exp:t+45*HR,others:1,offers:[]},
+      {id:'x6',kind:'part',buyer:'other',buyerName:'مشتري من الدمام',car:{mk:'جي إم سي',md:'يوكن',y:2019},part:'باب خلفي يسار يوكن',cat:'body',d:'door',conds:['used'],budget:1200,city:'الدمام',reach:'all',notes:'لون أسود',status:'open',t:t-6*HR,exp:t+42*HR,others:2,offers:[]},
     ],
-    orders,
-    threads:[
-      {id:'t1',side:'buyer',seller:'y1',ref:'req-r1',refTxt:'عرض على: كبوت كامري',unread:1,msgs:[
-        {from:'me',text:'السلام عليكم، الكبوت فيه صدمات من تحت؟',t:t-2.4*HR},
-        {from:'them',text:'وعليكم السلام، لا سليم والمفصلات معه.',t:t-2.3*HR},
-        {from:'them',text:'تقدر تمر تشوفه عندنا في السلي، أو نرسله لك مع مندوب المنصة.',t:t-2.3*HR}]},
-      {id:'t2',side:'buyer',seller:'y2',ref:'order-o24816',refTxt:'طلب TS-24816',unread:0,msgs:[
-        {from:'them',text:'تم تجهيز الكمبروسر وتغليفه.',t:t-20*HR},
-        {from:'them',text:'طلع مع المندوب، رقم الشحنة SP-88214',t:t-3*HR},
-        {from:'me',text:'تمام، الله يعطيك العافية',t:t-2.8*HR}]},
-      {id:'t3',side:'buyer',seller:'y4',ref:'part-p9',refTxt:'مراية جانبية يسار كامري',unread:0,msgs:[
-        {from:'me',text:'المراية فيها كاميرا؟',t:t-30*HR},
-        {from:'them',text:'لا بدون كاميرا. للتفاهم أسرع كلمني على ⟦رقم مخفي⟧',t:t-29*HR,masked:true}]},
-      {id:'t4',side:'seller',buyer:'خالد ع.',ref:'order-o24818',refTxt:'طلب TS-24818',unread:1,msgs:[
-        {from:'them',text:'السلام عليكم، متى تشحنون الشمعة؟ أنا في جدة.',t:t-30*MIN}]},
-    ],
-    notifs:[
-      {id:uid('n'),role:'buyer',kind:'offer',title:'عرض جديد على طلبك',body:'مستودع الأمانة لقطع الغيار: 1,180 ⃁ على «كبوت كامري»',link:'req-r1',t:t-1.2*HR,read:false},
-      {id:uid('n'),role:'buyer',kind:'hunt',title:'الصيّاد لقى قطعتك',body:'كشاف ضباب أمامي يسار يوكن، بـ 260 ⃁. راجعها واعتمدها',link:'req-r2',t:t-1.5*HR,read:false},
-      {id:uid('n'),role:'buyer',kind:'truck',title:'طلبك في الطريق',body:'TS-24816 كمبروسر مكيف كامري. رقم الشحنة SP-88214',link:'order-o24816',t:t-3*HR,read:true},
-      {id:uid('n'),role:'seller',kind:'money',title:'تم الدفع: جهّز الطلب',body:'TS-24818 شمعة أمامية يسار لاندكروزر، 1,900 ⃁ محجوزة لك',link:'seller-orders',t:t-50*MIN,read:false},
-      {id:uid('n'),role:'seller',kind:'offer',title:'طلب جديد يناسبك',body:'شمعة أمامية يسار لكزس ES 2020، ميزانية 1,500 ⃁',link:'seller-requests',t:t-40*MIN,read:false},
-    ],
-    ledger,
-    yard:{iban:'SA0380000000608010167519', holder:'مؤسسة تشليح الوطن', plan:'pro', comm:0.07},
+    orders:[], threads:[], notifs:[], ledger:[],
+    myYard:null, yard:null,
   };
 }
 function mkOrder(o){
@@ -1164,7 +1107,7 @@ function mkOrder(o){
 }
 function serviceFee(price){ return Math.min(49, Math.max(5, Math.round(price*0.02))); }
 
-function load(){ try{ const raw=localStorage.getItem(KEY); if(raw){ const d=JSON.parse(raw); if(d && d.v===4 && d.parts) return d; } }catch(e){} return null; }
+function load(){ try{ const raw=localStorage.getItem(KEY); if(raw){ const d=JSON.parse(raw); if(d && d.v===5 && d.parts) return d; } }catch(e){} return null; }
 function save(){
   clearTimeout(save._t);
   save._t = setTimeout(()=>{
@@ -1206,6 +1149,7 @@ function sellersFor(mk, city, reach, conds){
   });
 }
 const myYard = () => SELLER[MY_YARD];
+function registerMyYard(){ if(!S.myYard) return; const i=SELLERS.findIndex(x=>x.id==='me'); if(i>=0) SELLERS[i]=S.myYard; else SELLERS.push(S.myYard); SELLER.me = S.myYard; }
 const unreadNotifs = () => S.notifs.filter(n=>!n.read && n.role===S.role).length;
 const unreadMsgs = () => S.threads.filter(t=>t.side===S.role && t.unread>0).length;
 
@@ -1258,7 +1202,7 @@ function vinPlate(id, val){
 }
 function vinResult(v, id){
   v = vinClean(v);
-  if(v.length<17) return `<p class="small muted">${v.length?`باقي ${17-v.length} خانة. `:''}تلقى رقم الهيكل في الاستمارة، أو أسفل الزجاج الأمامي من جهة السائق. <button class="link small" data-a="vinSample" data-plate="${id}">جرّب رقم مثال</button></p>`;
+  if(v.length<17) return `<p class="small muted">${v.length?`باقي ${17-v.length} خانة. `:''}تلقى رقم الهيكل في الاستمارة، أو أسفل الزجاج الأمامي من جهة السائق.</p>`;
   const saved = S.garage.find(c=>c.vin===v);
   if(saved) return `<div class="vin-res"><span class="ic">${ic('check')}</span><div class="grow"><b>${esc(carName(saved))}</b><div class="small muted">محفوظة في سياراتي${saved.id===S.car?' وهي سيارتك الحالية':''}</div></div></div>
     <div class="row wrap"><a class="btn btn-ink" href="#parts" data-a="partsForCar" data-id="${saved.id}">${ic('nut',18)}قطع تركب عليها</a><a class="btn btn-ghost" href="#request" data-a="reqForCar" data-id="${saved.id}">اطلب قطعة لها</a></div>`;
@@ -1384,7 +1328,7 @@ function simOrder(o, resumed){
     if(o.status==='delivered' && o.fastRelease) later(9000, ()=>{ const x=findOrder(o.id); if(x&&x.status==='delivered'){ releaseOrder(x,'أكد المشتري سلامة القطعة'); commit(); } });
   }
 }
-function sellerNet(o){ return Math.round(o.price*(1-(o.seller===MY_YARD?S.yard.comm:0.07))); }
+function sellerNet(o){ return Math.round(o.price*(1-(o.seller===MY_YARD&&S.yard?S.yard.comm:0.07))); }
 function releaseOrder(o, why){
   setStatus(o,'released');
   if(o.seller===MY_YARD){
@@ -1429,6 +1373,7 @@ function searchForm(cls, id){
   </form>`;
 }
 function actsHTML(){
+  if(!S.authed) return `<div class="hdr-acts"><a href="#account" class="btn btn-ink btn-sm">${ic('user',16)}دخول</a></div>`;
   const n = unreadNotifs(), m = unreadMsgs(), seller = S.role==='seller';
   return `<div class="hdr-acts">
     ${seller?`<button class="role-pill hide-m" data-a="role" data-v="buyer" title="ارجع لوضع المشتري">${ic('swap',14)}وضع التشليح</button>`:''}
@@ -1437,7 +1382,7 @@ function actsHTML(){
       <button class="icon-btn" data-a="bell" aria-label="الإشعارات${n?`، ${n} جديدة`:''}" aria-expanded="${UI.drop}">${ic('bell',21)}${n?`<span class="dot-count num">${n}</span>`:''}</button>
       ${UI.drop?notifDrop():''}
     </div>
-    <a href="#account" class="icon-btn hide-m" aria-label="حسابي"><span class="avatar">${esc(S.user.name[0])}</span></a>
+    <a href="#account" class="icon-btn hide-m" aria-label="حسابي"><span class="avatar">${esc((S.user.name||'؟')[0])}</span></a>
   </div>`;
 }
 function hdrHTML(){
@@ -1469,9 +1414,9 @@ function footerHTML(){
   return `<footer class="footer"><div class="wrap"><div class="footer-g">
     <div class="stack" style="gap:10px"><a class="logo" href="#home"><span class="logo-mark">${LOGO}</span><span class="logo-name">تشاليح المملكة</span></a>
       <p class="small muted" style="max-width:40ch">منصة تربطك بالتشاليح ومحلات قطع الغيار في المملكة. الدفع عن طريقنا، والمبلغ ما يوصل للبائع إلا بعد ما تستلم قطعتك.</p>
-      <span class="demo-note">${ic('info',14)}نموذج أولي: كل البيانات تجريبية وتنحفظ في متصفحك</span></div>
+      </div>
     <div><h4>للمشتري</h4><a href="#parts">ابحث عن قطعة</a><a href="#request">اطلب من كل التشاليح</a><a href="#hunt">كلّف صيّاد</a><a href="#sell-car">بيع سيارتك التالفة</a></div>
-    <div><h4>للتشاليح</h4><a href="#join">سجّل منشأتك</a><a href="#seller" data-a="role" data-v="seller">لوحة التشليح</a><a href="#yards">دليل التشاليح</a></div>
+    <div><h4>للتشاليح</h4><a href="#join">سجّل منشأتك</a><a href="#${S.myYard?'seller':'join'}">لوحة التشليح</a><a href="#yards">دليل التشاليح</a></div>
     <div><h4>حسابك</h4><a href="#orders">طلباتي</a><a href="#messages">الرسائل</a><a href="#account">سياراتي وإعداداتي</a></div>
   </div><p class="tiny faint" style="margin-top:22px">© 2026 تشاليح المملكة</p></div></footer>`;
 }
@@ -1489,15 +1434,18 @@ function updateBadges(){ $$('.hdr-acts').forEach(el=>{ el.outerHTML = actsHTML()
 /* ═══════════ router ═══════════ */
 const ROUTES = [];
 const FORM_VIEWS = new Set();
+const AUTH_ROUTES = /^(orders|order-|req-|checkout|messages|chat-|account|notifications|seller|join)/;
 function route(re, fn, isForm){ ROUTES.push([re,fn]); if(isForm) FORM_VIEWS.add(fn); }
 function render(keep){
   const view = $('#view');
-  if(!S.authed){ $('#hdr').innerHTML = `<header class="hdr"><div class="wrap"><div class="hdr-row"><span class="logo"><span class="logo-mark">${LOGO}</span><span class="logo-name">تشاليح المملكة</span></span></div></div></header>`; $('#tabs').innerHTML=''; $('#ftr').innerHTML=''; view.innerHTML = vLogin(); AFTER.splice(0).forEach(f=>f()); return; }
+  if(S.role==='seller' && !S.myYard){ S.role='buyer'; }
   const r = decodeURIComponent(location.hash.slice(1));
   let fn=null, args=[];
   for(const [re,f] of ROUTES){ const m=r.match(re); if(m){ fn=f; args=m.slice(1); break; } }
   if(!fn) fn = vNotFound;
+  if(r.startsWith('seller') && !S.myYard){ location.replace('#join'); return; }
   if(r.startsWith('seller') && S.role!=='seller'){ S.role='seller'; save(); }
+  if(!S.authed && AUTH_ROUTES.test(r)){ fn = vLoginPage; args = []; }
   CUR = {r, fn, args};
   const y = window.scrollY;
   view.innerHTML = fn(...args);
@@ -1506,7 +1454,7 @@ function render(keep){
   AFTER.splice(0).forEach(f=>f());
 }
 function refresh(){
-  if(!S.authed) return;
+  
   const a = document.activeElement;
   const typing = a && a.matches && a.matches('input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=file]),textarea') && a.value;
   if(typing || $('#modal-root').innerHTML || FORM_VIEWS.has(CUR.fn)){ updateBadges(); if(CUR.fn===vMessages) updateThread(); return; }
@@ -1583,13 +1531,13 @@ A.bell = () => { if(window.innerWidth<900){ go('notifications'); return; } UI.dr
 A.readAll = () => { S.notifs.forEach(n=>{ if(n.role===S.role) n.read=true; }); save(); updateBadges(); if(CUR.fn===vNotifs) render(true); };
 A.openNotif = el => { const n=S.notifs.find(x=>x.id===el.dataset.id); if(n){ n.read=true; save(); } UI.drop=false; go(n&&n.link||'notifications'); };
 A.allNotifs = () => go('notifications');
-A.role = el => { const v=el.dataset.v||(S.role==='buyer'?'seller':'buyer'); S.role=v; save(); closeModal(); toast(v==='seller'?'دخلت وضع التشليح: تشليح الوطن':'رجعت لوضع المشتري','info'); go(v==='seller'?'seller':'home'); };
+A.role = el => { const v=el.dataset.v||(S.role==='buyer'?'seller':'buyer'); S.role=v; save(); closeModal(); if(v==='seller' && !S.myYard){ go('join'); return; } toast(v==='seller'?'دخلت لوحة '+myYard().n:'رجعت لوضع المشتري','info'); go(v==='seller'?'seller':'home'); };
 const HOST_THEME = document.documentElement.getAttribute('data-theme');
 function applyTheme(){ const d=document.documentElement; if(S.theme==='light'||S.theme==='dark') d.setAttribute('data-theme',S.theme); else if(HOST_THEME) d.setAttribute('data-theme',HOST_THEME); else d.removeAttribute('data-theme'); applySkin(); }
 function applySkin(){ const d=document.documentElement; if(S.skin && S.skin!=='green') d.setAttribute('data-skin',S.skin); else d.removeAttribute('data-skin'); }
 A.skin = el => { S.skin = el.dataset.v; applySkin(); save(); render(true); };
 A.theme = el => { S.theme = el.dataset.v; applyTheme(); save(); render(true); };
-A.logout = async () => { if(!(await ask('تسجيل الخروج','تبي تطلع من حسابك؟ بياناتك التجريبية تبقى محفوظة.','سجّل خروج'))) return; S.authed=false; UI.login={step:'phone'}; save(); location.hash='home'; render(false); };
+A.logout = async () => { if(!(await ask('تسجيل الخروج','تبي تطلع من حسابك؟','سجّل خروج'))) return; S.authed=false; S.role='buyer'; UI.login={step:'phone'}; save(); location.hash='home'; render(false); };
 A.reset = async () => { if(!(await ask('رجّع البيانات التجريبية','نمسح كل اللي سويته في النموذج (الطلبات، العروض، القطع المضافة) ونرجع البيانات الأصلية.','رجّعها','danger'))) return; try{ localStorage.removeItem(KEY); }catch(e){} S=seedState(); UI.q=''; save(); location.hash='home'; render(false); resumeSims(); toast('رجعت البيانات التجريبية'); };
 
 /* photos: read + downscale */
@@ -1612,29 +1560,40 @@ A.rmPhoto = el => { const key=el.dataset.key; UI[key].splice(+el.dataset.i,1); c
 
 /* ═══════════ login ═══════════ */
 UI.login = {step:'phone'};
-function vLogin(){
+function loginForms(){
   const L = UI.login;
-  const body = L.step==='phone' ? `
+  return L.step==='phone' ? `
       <form class="stack" data-f="loginPhone" novalidate>
         <div class="field"><label for="lg-ph">رقم الجوال</label><input class="inp" id="lg-ph" name="ph" inputmode="tel" dir="ltr" placeholder="05XXXXXXXX" value="${esc(L.phone||'')}" autocomplete="tel"><span class="err" id="lg-err"></span></div>
-        <button class="btn btn-ink btn-lg btn-block">أرسل رمز التحقق</button>
-        <p class="tiny faint">رقم الحساب التجريبي: <span class="mono">${S.user.phone}</span></p></form>`
-    : L.step==='otp' ? `
-      <form class="stack" data-f="loginOtp" novalidate>
-        <div class="callout-box warn">${ic('info',18)}<div><b>رمز التجربة: <span class="mono">${L.code}</span></b><div class="small">في النسخة الفعلية يوصلك الرمز برسالة على ${esc(L.phone)}.</div></div></div>
-        <div class="field"><label for="lg-otp">رمز التحقق (4 أرقام)</label><input class="inp mono" id="lg-otp" name="otp" inputmode="numeric" maxlength="4" style="font-size:24px;letter-spacing:.5em;text-align:center" autocomplete="one-time-code"><span class="err" id="lg-err"></span></div>
-        <button class="btn btn-ink btn-lg btn-block">تأكيد</button><button type="button" class="link small" data-a="loginBack">غيّر الرقم</button></form>`
+        <button class="btn btn-ink btn-lg btn-block">متابعة</button>
+        <p class="tiny faint">بدخولك توافق على شروط الاستخدام وسياسة الخصوصية.</p></form>`
     : `<form class="stack" data-f="loginName" novalidate>
-        <div class="field"><label for="lg-nm">وش نسميك؟</label><input class="inp" id="lg-nm" name="nm" placeholder="الاسم"><span class="err" id="lg-err"></span></div>
-        <div class="field"><label for="lg-city">مدينتك</label><select class="sel" id="lg-city" name="city">${selOpts(CITIES,'الرياض')}</select></div>
-        <button class="btn btn-ink btn-lg btn-block">ابدأ</button></form>`;
-  return `<div style="max-width:420px;margin:30px auto" class="card pad-l stack" >
-    <div><h1 style="font-family:var(--f-display);font-size:28px">أهلاً فيك</h1><p class="muted small">ادخل برقم جوالك. ما نحتاج كلمة مرور.</p></div>${body}</div>`;
+        <div class="field"><label for="lg-nm">الاسم</label><input class="inp" id="lg-nm" name="nm" placeholder="الاسم" autocomplete="name"><span class="err" id="lg-err"></span></div>
+        <div class="field"><label for="lg-city">مدينتك</label><select class="sel" id="lg-city" name="city">${selOpts(CITIES,S.user.city||'الرياض')}</select></div>
+        <button class="btn btn-ink btn-lg btn-block">إنشاء الحساب</button><button type="button" class="link small" data-a="loginBack">غيّر الرقم</button></form>`;
 }
-F.loginPhone = f => { const ph=f.ph.value.replace(/[\s-]/g,''); if(!V.phone(ph)){ $('#lg-err').textContent='اكتب رقم جوال سعودي يبدأ بـ 05 (10 أرقام)'; f.ph.classList.add('bad'); return; } UI.login={step:'otp',phone:ph,code:String(Math.floor(1000+Math.random()*9000))}; render(); };
-F.loginOtp = f => { if(f.otp.value.trim()!==UI.login.code){ $('#lg-err').textContent='الرمز غير صحيح، تأكد منه وجرّب مرة ثانية'; return; } if(UI.login.phone.replace(/^\+?966/,'0')===S.user.phone){ S.authed=true; save(); render(); toast('أهلاً '+S.user.name.split(' ')[0]); } else { UI.login.step='name'; render(); } };
-F.loginName = f => { const nm=f.nm.value.trim(); if(nm.length<2){ $('#lg-err').textContent='اكتب اسمك'; return; } S.user={name:nm,phone:UI.login.phone,city:f.city.value}; S.authed=true; save(); render(); toast('تم إنشاء حسابك'); };
-A.loginBack = () => { UI.login.step='phone'; render(); };
+function vLoginPage(){
+  return `<div style="max-width:420px;margin:30px auto" class="card pad-l stack" id="login-box">
+    <div><h1 style="font-family:var(--f-display);font-size:26px">سجّل دخولك</h1><p class="muted small">ادخل برقم جوالك عشان تتابع طلباتك ومحادثاتك.</p></div>${loginForms()}</div>`;
+}
+function needAuth(cont){
+  if(S.authed) return false;
+  UI.afterLogin = cont; UI.login = {step:'phone'};
+  modal(`${dlgHead('سجّل دخولك','عشان نرسل طلبك ونبلغك بالعروض')}<div class="dlg-b" id="login-box">${loginForms()}</div>`,'narrow');
+  return true;
+}
+function loginRedraw(){ const box=$('#login-box'); if(!box) return; if(box.classList.contains('card')) render(); else box.innerHTML = loginForms(); }
+function loginDone(msg){
+  S.authed = true; save(); toast(msg);
+  const inModal = !!$('#modal-root .dlg'); const cont = UI.afterLogin; UI.afterLogin = null;
+  if(inModal){ closeModal(); $('#hdr').innerHTML = hdrHTML(); $('#tabs').innerHTML = tabsHTML(); cont && cont(); }
+  else render();
+}
+F.loginPhone = f => { const ph=f.ph.value.replace(/[\s-]/g,'').replace(/^\+?966/,'0'); if(!V.phone(ph)){ $('#lg-err').textContent='اكتب رقم جوال سعودي يبدأ بـ 05 (10 أرقام)'; f.ph.classList.add('bad'); return; }
+  if(S.user && S.user.phone===ph && S.user.name){ loginDone('أهلاً '+S.user.name.split(' ')[0]); return; }
+  UI.login={step:'name',phone:ph}; loginRedraw(); };
+F.loginName = f => { const nm=f.nm.value.trim(); if(nm.length<2){ $('#lg-err').textContent='اكتب اسمك'; return; } S.user={name:nm,phone:UI.login.phone,city:f.city.value}; loginDone('أهلاً '+nm.split(' ')[0]+'، تم إنشاء حسابك'); };
+A.loginBack = () => { UI.login.step='phone'; loginRedraw(); };
 
 function vNotFound(){ return emptyBox('search','الصفحة غير موجودة','يمكن الرابط قديم أو انحذف المحتوى.',`<a class="btn btn-ink" href="#home">الرئيسية</a>`); }
 
@@ -1646,11 +1605,6 @@ function vHome(){
   const compat = car ? live.filter(p=>fitStatus(p,car)==='ok') : [];
   const row = compat.length>=3 ? compat.sort((a,b)=>b.ts-a.ts).slice(0,8) : live.sort((a,b)=>b.ts-a.ts).slice(0,8);
   const near = SELLERS.filter(s=>s.city===S.user.city).sort((a,b)=>a.km-b.km).slice(0,3);
-  const feed = [
-    ...S.requests.filter(r=>r.buyer!=='me'&&r.kind==='part').map(r=>({t:r.t,txt:r.part,car:`${r.car.mk} ${r.car.md} ${r.car.y}`,city:r.city,n:(r.others||0)+r.offers.length,d:r.d})),
-    {t:now()-12*MIN,txt:'دفرنس خلفي باترول',car:'نيسان باترول 2016',city:'جدة',n:2,d:'axle'},
-    {t:now()-26*MIN,txt:'كمبيوتر مكيف سوناتا',car:'هيونداي سوناتا 2020',city:'الدمام',n:4,d:'ecu'},
-  ].sort((a,b)=>b.t-a.t).slice(0,5);
   return `
   <section class="hero">
     <div>
@@ -1691,20 +1645,14 @@ function vHome(){
     </div>
   </section>
 
-  <section class="layout-2 split" style="margin-top:44px">
-    <div class="sec">
-      <div class="sec-h"><div><h2>تشاليح قريبة منك</h2><div class="sub">في ${esc(S.user.city)}</div></div><a class="btn btn-ghost btn-sm" href="#yards">دليل التشاليح</a></div>
-      <div class="ygrid" style="grid-template-columns:1fr">${near.map(yardCard).join('')}</div>
-    </div>
-    <div class="sec">
-      <div class="sec-h"><div><h2>آخر الطلبات</h2><div class="sub">وش يطلب الناس الحين، وكم عرض جاهم</div></div></div>
-      <div class="card pad"><div class="feed">${feed.map(f=>`<div class="feed-i"><span class="fi">${ic('tag',18)}</span><div style="min-width:0"><div class="b small ell">${esc(f.txt)}</div><div class="tiny muted">${esc(f.car)} · ${esc(f.city)} · ${ago(f.t)}</div></div><span class="pill p-tag nodot num">${f.n} ${f.n===1?'عرض':f.n===2?'عرضين':'عروض'}</span></div>`).join('')}</div></div>
-    </div>
+  <section class="sec" style="margin-top:44px">
+    <div class="sec-h"><div><h2>تشاليح ومحلات في ${esc(S.user.city||'الرياض')}</h2><div class="sub">تخصصاتهم والقطع المعروضة عندهم</div></div><a class="btn btn-ghost btn-sm" href="#yards">دليل التشاليح</a></div>
+    <div class="ygrid">${near.map(yardCard).join('')}</div>
   </section>
 
   <section class="band" style="margin-top:48px">
     <div><h2>عندك تشليح أو محل قطع غيار؟</h2><p>اعرض مخزونك لكل المملكة، واستقبل طلبات مشترين جاهزين يدفعون. التسجيل بالسجل التجاري ياخذ خمس دقائق.</p></div>
-    <div class="row wrap"><a class="btn btn-tag btn-lg" href="#join">سجّل منشأتك</a><button class="btn btn-lg" style="background:transparent;color:var(--paper);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--paper) 40%,transparent)" data-a="role" data-v="seller">جرّب لوحة التشليح</button></div>
+    <div class="row wrap"><a class="btn btn-tag btn-lg" href="#join">سجّل منشأتك</a></div>
   </section>`;
 }
 A.openCat = el => { UI.cats=[el.dataset.id]; UI.q=''; go('parts'); };
@@ -1714,11 +1662,10 @@ A.reqForCar = el => { S.car=el.dataset.id; save(); go('request'); };
 function yardCard(s){
   const n = S.parts.filter(p=>p.seller===s.id && livePart(p)).length;
   return `<a class="ycard" href="#yard-${s.id}">
-    <div class="row" style="align-items:flex-start">${yav(s)}<div class="grow"><div class="row wrap" style="gap:8px"><b style="font-size:16px">${esc(s.n)}</b>${verified(s)}</div>
-      <div class="small muted">${sellerKind(s)} · ${esc(s.city)}، ${esc(s.dist)}${s.city===S.user.city?` · ${s.km} كم`:''}</div></div></div>
-    <div class="row wrap" style="gap:14px">${stars(s.rating,s.reviews)}<span class="small muted row" style="gap:4px">${ic('clock',15)}يرد خلال ${tMin(s.resp)}</span></div>
+    <div class="row" style="align-items:flex-start">${yav(s)}<div class="grow"><b style="font-size:16px">${esc(s.n)}</b>
+      <div class="small muted">${sellerKind(s)} · ${esc(s.city)}، ${esc(s.dist)}</div></div></div>
     <div class="mk-chips">${s.mk.slice(0,5).map(m=>`<span>${esc(m)}</span>`).join('')}${s.mk.length>5?`<span>+${s.mk.length-5}</span>`:''}</div>
-    <div class="ystats"><div><b class="num">${n}</b><span>قطعة معروضة</span></div><div><b class="num">${fmt(s.deals)}</b><span>صفقة مكتملة</span></div><div><b class="num">${s.since}</b><span>في السوق من</span></div></div>
+    <div class="ystats" style="grid-template-columns:1fr 1fr"><div><b class="num">${n}</b><span>قطعة معروضة</span></div><div><b>${s.type==='store'?'جديد':'مستعمل'}</b><span>${s.type==='store'?'تجاري ووكالة':'من سيارات تشليح'}</span></div></div>
   </a>`;
 }
 
@@ -1763,7 +1710,7 @@ function vParts(){
     <div class="stack" style="gap:16px;min-width:0">
       <div class="row wrap between">
         <button class="btn btn-ghost btn-sm show-m" data-a="filterSheet">${ic('sliders',16)}الفلاتر${nf?` (${nf})`:''}</button>
-        <div class="row" style="margin-inline-start:auto"><label for="sort" class="small muted">الترتيب</label><select id="sort" class="sel" style="height:38px;width:auto" data-c="fSort">${selOpts([['rel','الأنسب'],['low','الأرخص'],['high','الأغلى'],['new','الأحدث'],['rating','تقييم البائع']], UI.sort)}</select></div>
+        <div class="row" style="margin-inline-start:auto"><label for="sort" class="small muted">الترتيب</label><select id="sort" class="sel" style="height:38px;width:auto" data-c="fSort">${selOpts([['rel','الأنسب'],['low','الأرخص'],['high','الأغلى'],['new','الأحدث']], UI.sort)}</select></div>
       </div>
       ${list.length ? `<div class="pgrid tight">${list.map(p=>partCard(p)).join('')}</div>
         <div class="callout-box tag" style="align-items:center;flex-wrap:wrap">${ic('inbox',22)}<div class="grow" style="min-width:200px"><b>ما لقيت اللي تبيه؟</b> أغلب قطع التشاليح ما تنعرض أونلاين. أرسل طلب وتوصلك العروض.</div><button class="btn btn-ink btn-sm" data-a="reqFromSearch">أرسل طلب</button></div>`
@@ -1787,7 +1734,7 @@ A.fReset = () => { Object.assign(UI,{cond:'all',cats:[],city:'',pmin:'',pmax:'',
 A.clearQ = () => { UI.q=''; render(false); };
 A.filterSheet = () => { modal(`${dlgHead('الفلاتر')}<div class="dlg-b">${filtersHTML()}</div><div class="dlg-f"><button class="btn btn-ink" data-a="close">اعرض ${partsList().length} قطعة</button></div>`); };
 A.reqFromSearch = () => { UI.reqDraft = {part:UI.q, cat:UI.cats[0]||guessCat(UI.q)}; go('request'); };
-A.addAlert = () => { if(!UI.q) return; S.alerts.unshift({id:uid('al'),q:UI.q,carId:S.car,t:now()}); save(); toast(`بننبهك أول ما تنعرض «${esc(UI.q)}»`,'ok',['account','تنبيهاتي']); };
+A.addAlert = () => { if(!UI.q) return; if(needAuth(()=>A.addAlert())) return; S.alerts.unshift({id:uid('al'),q:UI.q,carId:S.car,t:now()}); save(); toast(`بننبهك أول ما تنعرض «${esc(UI.q)}»`,'ok',['account','تنبيهاتي']); };
 
 /* ═══════════ PART DETAIL ═══════════ */
 route(/^part-(\w+)$/, vPart);
@@ -1858,6 +1805,7 @@ A.pdThumb = el => { const p=findPart(CUR.args[0]); const i=+el.dataset.i; $('#pd
 A.buyPart = el => { UI.co = {kind:'part', partId:el.dataset.id}; go('checkout'); };
 A.alertLike = el => { const p=findPart(el.dataset.id); S.alerts.unshift({id:uid('al'),q:p.n,carId:S.car,t:now()}); save(); toast('بننبهك أول ما تنعرض قطعة مثلها'); };
 A.chatSeller = el => {
+  if(needAuth(()=>A.chatSeller(el))) return;
   const sid = el.dataset.seller; let t = S.threads.find(x=>x.side==='buyer' && x.seller===sid);
   if(!t){ t = {id:uid('t'),side:'buyer',seller:sid,ref:el.dataset.ref||'',refTxt:el.dataset.reftxt||'',unread:0,msgs:[]}; S.threads.unshift(t); }
   else if(el.dataset.ref){ t.ref=el.dataset.ref; t.refTxt=el.dataset.reftxt; }
@@ -1931,10 +1879,11 @@ I.reach = () => {
   const list = target ? [target] : cc ? sellersFor(cc.car.mk, city, reach, conds) : [];
   box.innerHTML = `<span class="small muted">بيوصل طلبك لـ</span><div class="row" style="align-items:baseline;gap:8px"><span class="big num">${list.length}</span><b>${list.length===1?'بائع':list.length===2?'بائعين':list.length<=10?'بائعين':'بائع'}</b></div>
     ${cc?`<p class="small muted">${target?'':`تشاليح ومحلات تخصصها ${esc(cc.car.mk)} في ${reach==='city'?esc(city):reach==='region'?'المنطقة '+(REGION[city]||''):'كل المملكة'}`}</p>`:'<p class="small muted">اختر السيارة عشان نحسب.</p>'}
-    ${list.length?`<div class="stack" style="gap:6px;margin-top:4px">${list.slice(0,4).map(s=>`<div class="row small" style="gap:8px">${yav(s)}<span class="grow ell">${esc(s.n)}</span>${stars(s.rating)}</div>`).join('')}${list.length>4?`<span class="tiny faint">و${list.length-4} غيرهم</span>`:''}</div>`:cc?'<p class="small" style="color:var(--warn)">ما فيه بائعين بهالنطاق. وسّع النطاق لكل المملكة.</p>':''}
+    ${list.length?`<div class="stack" style="gap:6px;margin-top:4px">${list.slice(0,4).map(s=>`<div class="row small" style="gap:8px">${yav(s)}<span class="grow ell">${esc(s.n)}</span><span class="tiny faint">${esc(s.city)}</span></div>`).join('')}${list.length>4?`<span class="tiny faint">و${list.length-4} غيرهم</span>`:''}</div>`:cc?'<p class="small" style="color:var(--warn)">ما فيه بائعين بهالنطاق. وسّع النطاق لكل المملكة.</p>':''}
     <hr class="divider"><div class="small muted row" style="gap:6px">${ic('clock',16)}الطلب يستقبل عروض لمدة 48 ساعة</div>`;
 };
 F.request = f => {
+  if(needAuth(()=>F.request(f))) return;
   const cc = readChosenCar('rq-car','rqc');
   const part = f.part.value.trim(); const cat = f.cat.value || guessCat(part) || 'body';
   const conds = $$('input[name=conds]:checked', f).map(x=>x.value);
@@ -1958,7 +1907,7 @@ route(/^req-(\w+)$/, vReq);
 const REQ_ST = {open:['يستقبل عروض','p-trust live'],found:['الصيّاد لقاها','p-tag'],accepted:['تم القبول','p-mute'],expired:['انتهت مدته','p-mute'],cancelled:['ملغي','p-mute'],searching:['يدوّر','p-warn live']};
 function bestOffer(offers){
   const live = offers.filter(o=>o.status==='pending'); if(live.length<2) return null;
-  return live.map(o=>({o,sc:o.price/(1+o.war/365*.35+(SELLER[o.seller].rating-4)*.25)})).sort((a,b)=>a.sc-b.sc)[0].o.id;
+  return live.map(o=>({o,sc:o.price/(1+o.war/365*.35)})).sort((a,b)=>a.sc-b.sc)[0].o.id;
 }
 function offerCard(r, o, best){
   const s = SELLER[o.seller]; const mine = o.seller===MY_YARD;
@@ -1967,8 +1916,8 @@ function offerCard(r, o, best){
   return `<article class="offer ${cls} ${o.fresh?'offer-new':''}">
     ${plate(r.d||'engine')}
     <div class="stack" style="gap:6px;min-width:0">
-      <div class="row wrap" style="gap:8px"><a href="#yard-${s.id}" class="b" style="text-decoration:none">${esc(s.n)}</a>${verified(s)}${o.id===best&&r.status==='open'?'<span class="pill p-trust nodot">أفضل قيمة</span>':''}${o.status==='accepted'?'<span class="pill p-trust">قبلته</span>':''}${mine?'<span class="pill p-tag nodot">تشليحك</span>':''}</div>
-      <div class="meta-line">${stars(s.rating,s.reviews)}<span>${ic('pin',14)}${esc(s.city)}</span><span>${ic('clock',14)}${ago(o.t)}</span></div>
+      <div class="row wrap" style="gap:8px"><a href="#yard-${s.id}" class="b" style="text-decoration:none">${esc(s.n)}</a>${o.id===best&&r.status==='open'?'<span class="pill p-trust nodot">أفضل قيمة</span>':''}${o.status==='accepted'?'<span class="pill p-trust">قبلته</span>':''}${mine?'<span class="pill p-tag nodot">تشليحك</span>':''}</div>
+      <div class="meta-line"><span>${ic('pin',14)}${esc(s.city)}</span><span>${ic('clock',14)}${ago(o.t)}</span></div>
       <div class="row wrap" style="gap:8px">${o.cond==='vehicle'?'':condBadge(o.cond,o.grade)}${o.cond==='vehicle'?'':`<span class="small">${warTxt(o.war)}</span>`}<span class="small muted">${esc(o.eta)}</span></div>
       ${o.note?`<p class="small" style="color:var(--ink-2)">«${esc(o.note)}»</p>`:''}
     </div>
@@ -1985,7 +1934,7 @@ function vReq(id){
   r.offers.forEach(o=>{ if(o.fresh) AFTER.push(()=>{ delete o.fresh; save(); }); });
   const best = bestOffer(r.offers);
   const sortBy = UI.offSort||'price';
-  const offers = [...r.offers].sort(sortBy==='rating'?(a,b)=>SELLER[b.seller].rating-SELLER[a.seller].rating:sortBy==='war'?(a,b)=>b.war-a.war:(a,b)=>a.price-b.price);
+  const offers = [...r.offers].sort(sortBy==='war'?(a,b)=>b.war-a.war:(a,b)=>a.price-b.price);
   const st = REQ_ST[r.status]||REQ_ST.open; const veh = r.kind==='vehicle';
   const waiting = r.status==='open' && r.simLeft>0;
   return `
@@ -1995,7 +1944,7 @@ function vReq(id){
   <div class="layout-2">
     <section class="stack" style="gap:14px;min-width:0">
       <div class="row wrap between"><h2 style="font-size:20px">${r.offers.length?`العروض (${r.offers.length})`:'العروض'}</h2>
-        ${r.offers.length>1?`<div class="seg">${[['price','الأرخص'],['rating','الأعلى تقييماً'],['war','أطول ضمان']].filter(x=>!veh||x[0]!=='war').map(([v,l])=>`<button class="${sortBy===v?'on':''}" data-a="offSort" data-v="${v}">${l}</button>`).join('')}</div>`:''}</div>
+        ${r.offers.length>1?`<div class="seg">${[['price','الأرخص'],['war','أطول ضمان']].filter(x=>!veh||x[0]!=='war').map(([v,l])=>`<button class="${sortBy===v?'on':''}" data-a="offSort" data-v="${v}">${l}</button>`).join('')}</div>`:''}</div>
       ${waiting?`<div class="callout-box trust" style="align-items:center"><span class="pill p-trust live nodot" style="padding:0;background:none"></span>${ic('inbox',20)}<div class="grow small"><b>بانتظار عروض أكثر.</b> طلبك وصل لـ ${r.sentTo} ${veh?'تشليح':'بائع'} وشافه ${r.views+r.offers.length*3} منهم.</div></div>`:''}
       ${offers.length?offers.map(o=>offerCard(r,o,best)).join(''):emptyBox('inbox','ما وصلت عروض للحين','التشاليح تشوف طلبك الحين. أول عرض يوصل عادةً خلال 30 دقيقة، وبنبلغك فوراً.')}
       ${r.status==='accepted'&&veh?vehicleDeal(r):''}
@@ -2066,7 +2015,7 @@ function vHunt(){
       <div class="form-sec"><h3><span class="n">3</span>اختر الصيّاد</h3>
         <div class="stack" style="gap:10px">
           <label class="hunter"><input type="radio" name="hunter" value="" checked><span class="hav">${ic('zap',20)}</span><div><b>أول صيّاد متاح في مدينتك</b><div class="small muted">أسرع خيار، يقبلها عادةً خلال دقائق</div></div><b class="num">45 ⃁</b></label>
-          ${HUNTERS.map(h=>`<label class="hunter"><input type="radio" name="hunter" value="${h.id}"><span class="hav">${h.ab}</span><div style="min-width:0"><div class="row wrap" style="gap:8px"><b>${esc(h.n)}</b>${stars(h.rating,h.jobs)}</div><div class="small muted">${esc(h.city)} · يلقاها عادةً خلال ${h.avg} · ${esc(h.note)}</div></div><b class="num">${h.fee} ⃁</b></label>`).join('')}
+
         </div></div>
     </div>
     <aside class="stack sticky">
@@ -2082,6 +2031,7 @@ function vHunt(){
   </form>`;
 }
 F.hunt = f => {
+  if(needAuth(()=>F.hunt(f))) return;
   const cc = readChosenCar('hn-car','hnc'); const part=f.part.value.trim();
   if(part.length<3){ $('#hn-err').textContent='اكتب اسم القطعة'; f.part.classList.add('bad'); f.part.focus(); return; }
   if(!cc){ toast('اختر السيارة','bad'); return; }
@@ -2115,7 +2065,7 @@ function vHuntDetail(r){
       ${r.status==='accepted'&&r.orderId?`<a class="btn btn-ink" href="#order-${r.orderId}">تتبع الطلب</a>`:''}
     </section>
     <aside class="stack sticky">
-      ${h?`<div class="card pad stack"><div class="row"><span class="hav">${h.ab}</span><div class="grow"><b>${esc(h.n)}</b><div class="small muted">صيّاد موثّق · ${esc(h.city)}</div></div></div><div class="row wrap" style="gap:12px">${stars(h.rating,h.jobs)}<span class="small muted">${h.jobs} مهمة</span></div><p class="small muted">${esc(h.note)}</p></div>`
+      ${h?`<div class="card pad stack"><div class="row"><span class="hav">${h.ab}</span><div class="grow"><b>${esc(h.n)}</b><div class="small muted">صيّاد · ${esc(h.city)}</div></div></div><p class="small muted">${esc(h.note)}</p></div>`
           :`<div class="card pad small muted">بنختار لك أول صيّاد متاح في ${esc(r.city)}.</div>`}
       <div class="safe-note">${ic('lock',18)}<span>أجرة الصيّاد ${sar(r.fee)} تندفع مع القطعة فقط إذا اعتمدتها. إذا ما لقاها خلال 3 أيام، المهمة تنتهي بدون أي رسوم.</span></div>
       ${r.status==='open'||r.status==='found'?`<button class="btn btn-quiet btn-sm" data-a="cancelReq" data-id="${r.id}">إلغاء المهمة</button>`:''}
@@ -2159,6 +2109,7 @@ function vSellCar(){
 }
 C.chipRadio = el => { $$('label.chip', el.closest('.chips')).forEach(l=>l.classList.toggle('on', l.contains(el))); };
 F.sellCar = f => {
+  if(needAuth(()=>F.sellCar(f))) return;
   const cc = readChosenCar('vc-car','vcc'); if(!cc){ toast('اختر السيارة','bad'); return; }
   const damage = f.damage.value; const n = SELLERS.filter(s=>s.type==='yard' && REGION[s.city]===REGION[f.city.value]).length || 3;
   const r = {id:uid('r'),kind:'vehicle',buyer:'me',car:cc.car,carId:cc.carId,part:`${cc.car.mk} ${cc.car.md} ${cc.car.y} (${damage})`,cat:'body',d:'car',damage,drivable:f.drivable.value==='1',km:+f.km.value||0,
@@ -2211,7 +2162,7 @@ function vCheckout(){
     <div class="stack" style="gap:18px;min-width:0">
       <div class="card pad"><div class="row" style="align-items:flex-start;gap:14px"><div style="width:110px;flex-shrink:0;border-radius:10px;overflow:hidden;border:1px solid var(--line)">${plate(it.d)}</div>
         <div class="stack" style="gap:6px;min-width:0"><b>${esc(it.n)}</b><div class="row wrap" style="gap:8px">${condBadge(it.cond,it.grade)}<span class="small">${warTxt(it.war)}</span></div>
-        <div class="small muted">${esc(s.n)} · ${esc(s.city)} ${verified(s)}</div>${it.car?`<div class="small muted">لـ ${esc(it.car.mk)} ${esc(it.car.md)} ${it.car.y}</div>`:''}</div></div></div>
+        <div class="small muted">${esc(s.n)} · ${esc(s.city)}</div>${it.car?`<div class="small muted">لـ ${esc(it.car.mk)} ${esc(it.car.md)} ${it.car.y}</div>`:''}</div></div></div>
       <div class="card pad stack"><b>الاستلام</b>${k.opts.map(([v,l,fee,sub])=>`<label class="radio-card"><input type="radio" name="deliv" value="${v}" ${UI.co.deliv===v?'checked':''} data-c="coDeliv"><div class="grow"><b class="small">${esc(l)}</b><div class="tiny muted">${sub}</div></div><b class="small num">${fee?sar(fee):'مجاناً'}</b></label>`).join('')}</div>
       <div class="card pad stack" id="co-addr" ${UI.co.deliv==='pickup'?'hidden':''}><div class="row between"><b>العنوان</b><button type="button" class="link small" data-a="addAddr">عنوان جديد</button></div>
         ${S.addresses.map(a=>`<label class="radio-card"><input type="radio" name="addr" value="${a.id}" ${UI.co.addr===a.id?'checked':''} data-c="coAddr"><div class="grow"><b class="small">${esc(a.label)}</b><div class="tiny muted">${esc(a.city)}، ${esc(a.dist)} · العنوان المختصر <span class="mono">${esc(a.short)}</span></div></div></label>`).join('')}</div>
@@ -2221,7 +2172,7 @@ function vCheckout(){
       <div class="card pad-l stack" id="co-sum">${coSummary(it,k)}</div>
       <label class="check"><input type="checkbox" name="terms" checked>أوافق على شروط الضمان: عندي 48 ساعة من الاستلام أفحص القطعة، وبعدها يتحول المبلغ للبائع تلقائياً إذا ما فتحت نزاع.</label>
       <button class="btn btn-trust btn-lg btn-block" id="pay-btn">${ic('lock',19)}ادفع ${sar(k.total)}</button>
-      <span class="demo-note" style="align-self:center">${ic('info',14)}دفع تجريبي، ما ينخصم أي مبلغ</span>
+      <span class="tiny faint" style="align-self:center;text-align:center">الدفع الإلكتروني يتفعّل مع الإطلاق الرسمي، وما ينخصم منك أي مبلغ الحين</span>
     </aside>
   </form>`;
 }
@@ -2245,6 +2196,7 @@ F.addr = f => {
 F.pay = f => {
   const it = coItem(); if(!it) return;
   if(!f.terms.checked){ toast('وافق على شروط الضمان عشان نكمل','bad'); return; }
+  if(UI.co.deliv!=='pickup' && !S.addresses.find(x=>x.id===UI.co.addr)){ toast('أضف عنوان التوصيل أول','bad'); A.addAddr(); return; }
   const k = coCalc(it); const btn = $('#pay-btn'); btn.disabled = true; btn.innerHTML = '<span class="spin"></span>جاري الدفع…';
   setTimeout(()=>{
     const no = S.seq++; const id = 'o'+no;
@@ -2255,7 +2207,7 @@ F.pay = f => {
     if(it.reqId){ const r=findReq(it.reqId); r.status='accepted'; r.orderId=id; r.simLeft=0; if(it.offerId){ r.offers.forEach(x=>x.status = x.id===it.offerId?'accepted':'declined'); } }
     if(it.seller===MY_YARD) notify('seller','money','تم الدفع: جهّز الطلب', `TS-${no} ${it.n}، ${sar(it.price)} محجوزة لك`, 'seller-orders');
     UI.co = null; save(); go('order-'+id);
-    toast(`تم الدفع. ${sar(k.total)} محجوزة في المنصة لين تستلم`,'money');
+    toast(`تم تأكيد طلبك TS-${no}`,'ok');
     simOrder(o);
   }, 1300);
 };
@@ -2330,7 +2282,7 @@ function vOrder(id){
   if(o.status==='shipped') acts.push(`<button class="btn btn-ink btn-lg" data-a="gotIt" data-id="${o.id}">${ic('check',19)}${o.deliv==='pickup'?'استلمتها من الموقع':'استلمت القطعة'}</button>`);
   if(o.status==='delivered') acts.push(`<button class="btn btn-trust btn-lg" data-a="releaseOrder" data-id="${o.id}">${ic('check',19)}القطعة سليمة، حوّل المبلغ</button>`,`<button class="btn btn-danger btn-lg" data-a="dispute" data-id="${o.id}">${ic('flag',19)}عندي مشكلة</button>`);
   if(o.status==='released' && !o.rated) acts.push(`<button class="btn btn-tag btn-lg" data-a="rate" data-id="${o.id}">${ic('star',19)}قيّم ${esc(s.n)}</button>`);
-  const mineYard = o.seller===MY_YARD && (o.status==='paid'||o.status==='preparing');
+
   return `
   <a class="back" href="#orders" data-a="toOrders">${ic('back',18)}طلباتي</a>
   <div class="page-h"><div><div class="row" style="gap:10px;margin-bottom:6px"><span class="pill ${st[1]}">${st[0]}</span><span class="small muted">${dateTime(o.t)}</span></div><h1>طلب <span class="num">TS-${o.no}</span></h1></div></div>
@@ -2339,11 +2291,11 @@ function vOrder(id){
       ${vault(o)}
       ${acts.length?`<div class="row wrap">${acts.join('')}</div>`:''}
       ${o.rated?`<div class="callout-box">${ic('star',18)}<span>قيّمت ${esc(s.n)} بـ <b class="num">${o.rated}</b> من 5. شكراً لك.</span></div>`:''}
-      ${mineYard?`<div class="callout-box tag" style="flex-wrap:wrap;align-items:center">${ic('info',18)}<div class="grow small" style="min-width:200px"><b>في النموذج التجريبي، ${esc(s.n)} هو تشليحك.</b> بدّل لوضع التشليح وجهّز الطلب عشان تشوف الطرفين.</div><button class="btn btn-ink btn-sm" data-a="role" data-v="seller">افتح لوحة التشليح</button></div>`:''}
+
       ${o.dispute?`<div class="card pad stack" style="border-color:var(--alert)"><div class="row between"><b>النزاع</b><span class="pill ${o.status==='disputed'?'p-alert':'p-mute'}">${o.status==='disputed'?'قيد المراجعة':'انتهى'}</span></div>
         <dl class="kv" style="margin:0"><dt>السبب</dt><dd>${esc(o.dispute.reason)}</dd><dt>تبي</dt><dd>${esc(o.dispute.want)}</dd><dt>التفاصيل</dt><dd style="font-weight:500">${esc(o.dispute.desc)}</dd>${o.dispute.reply?`<dt>رد البائع</dt><dd style="font-weight:500">${esc(o.dispute.reply)}</dd>`:''}${o.dispute.decision?`<dt>القرار</dt><dd>${esc(o.dispute.decision)}</dd>`:''}</dl>
         ${o.dispute.photos?.length?`<div class="uploads">${o.dispute.photos.map(p=>`<div class="up-img"><img src="${p}" alt=""></div>`).join('')}</div>`:''}
-        ${o.status==='disputed'?`<div class="callout-box" style="flex-wrap:wrap">${ic('info',18)}<div class="grow small">فريق المراجعة يرد خلال 48 ساعة عمل. <b>للتجربة:</b> اختر القرار.</div><div class="row"><button class="btn btn-sm btn-ink" data-a="resolve" data-id="${o.id}" data-v="refund">استرجاع للمشتري</button><button class="btn btn-sm btn-ghost" data-a="resolve" data-id="${o.id}" data-v="release">صرف للبائع</button></div></div>`:''}</div>`:''}
+        ${o.status==='disputed'?`<div class="callout-box">${ic('info',18)}<span class="small">فريق المراجعة يتواصل معك ومع البائع ويرد خلال 48 ساعة عمل.</span></div>`:''}</div>`:''}
       <div class="card pad-l"><h3 style="margin-bottom:16px">حالة الطلب</h3><div class="tl">${orderTimeline(o)}</div></div>
       <div class="card pad"><div class="row" style="align-items:flex-start;gap:14px"><div style="width:110px;flex-shrink:0;border-radius:10px;overflow:hidden;border:1px solid var(--line)">${plate(o.item.d,{oem:o.item.oem})}</div>
         <div class="stack" style="gap:6px;min-width:0"><b>${o.item.partId?`<a href="#part-${o.item.partId}">${esc(o.item.n)}</a>`:esc(o.item.n)}</b><div class="row wrap" style="gap:8px">${condBadge(o.item.cond,o.item.grade)}<span class="small">${warTxt(o.item.war)}</span></div>${o.item.oem?`<div class="small muted">رقم القطعة <span class="mono">${esc(o.item.oem)}</span></div>`:''}</div></div></div>
@@ -2475,20 +2427,20 @@ function vYards(){
   if(UI.yCity) L = L.filter(s=>s.city===UI.yCity);
   if(UI.yMk) L = L.filter(s=>s.mk.includes(UI.yMk));
   if(UI.yType) L = L.filter(s=>s.type===UI.yType);
-  const by = {near:(a,b)=>(a.city===S.user.city?a.km:9999+a.km)-(b.city===S.user.city?b.km:9999+b.km), rating:(a,b)=>b.rating-a.rating, fast:(a,b)=>a.resp-b.resp};
-  L.sort(by[UI.ySort]);
-  return `<div class="page-h"><div><h1>دليل التشاليح</h1><p class="sub">${SELLERS.length} تشليح ومحل قطع في ${new Set(SELLERS.map(s=>s.city)).size} مدن. الموثّق تحققنا من سجله التجاري وموقعه.</p></div></div>
+  const by = {near:(a,b)=>(a.city===S.user.city?a.km:9999+a.km)-(b.city===S.user.city?b.km:9999+b.km), name:(a,b)=>a.n.localeCompare(b.n,'ar')};
+  L.sort(by[UI.ySort]||by.near);
+  return `<div class="page-h"><div><h1>دليل التشاليح</h1><p class="sub">${SELLERS.length} تشليح ومحل قطع في ${new Set(SELLERS.map(s=>s.city)).size} مدن، مع تخصص كل واحد.</p></div></div>
   <div class="card pad" style="margin-bottom:18px"><div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
     <div class="field"><label for="y-city">المدينة</label><select class="sel" id="y-city" data-c="yF" data-k="yCity">${selOpts([...new Set(SELLERS.map(s=>s.city))], UI.yCity, 'كل المدن')}</select></div>
     <div class="field"><label for="y-mk">متخصص في</label><select class="sel" id="y-mk" data-c="yF" data-k="yMk">${selOpts(Object.keys(MAKES), UI.yMk, 'كل الشركات')}</select></div>
     <div class="field"><label for="y-type">النوع</label><select class="sel" id="y-type" data-c="yF" data-k="yType">${selOpts([['yard','تشاليح (مستعمل)'],['store','محلات قطع جديدة']], UI.yType, 'الكل')}</select></div>
-    <div class="field"><label for="y-sort">الترتيب</label><select class="sel" id="y-sort" data-c="yF" data-k="ySort">${selOpts([['near','الأقرب لي'],['rating','الأعلى تقييماً'],['fast','الأسرع رداً']], UI.ySort)}</select></div>
+    <div class="field"><label for="y-sort">الترتيب</label><select class="sel" id="y-sort" data-c="yF" data-k="ySort">${selOpts([['near','الأقرب لي'],['name','بالاسم']], UI.ySort)}</select></div>
   </div></div>
   ${L.length?`<div class="ygrid">${L.map(yardCard).join('')}</div>`:emptyBox('store','ما فيه تشاليح بهالفلاتر','جرّب مدينة ثانية أو أرسل طلب لكل المملكة.',`<a class="btn btn-tag" href="#request">أرسل طلب</a>`)}`;
 }
 C.yF = el => { UI[el.dataset.k] = el.value; render(true); };
 route(/^yard-(\w+)$/, vYard);
-const REVIEWS = [['فهد','القطعة نفس الصور بالضبط، وشحنوها بنفس اليوم.',5,3],['سارة','ردهم سريع وساعدوني أتأكد من رقم القطعة.',5,9],['ناصر','القطعة ممتازة بس التغليف كان يحتاج أحسن.',4,17],['ماجد','ثاني مرة أتعامل معهم، ثقة.',5,30]];
+
 function vYard(id){
   const s = SELLER[id]; if(!s) return vNotFound();
   const parts = S.parts.filter(p=>p.seller===id && livePart(p));
@@ -2496,16 +2448,16 @@ function vYard(id){
   const tab = UI.yTab||'parts';
   return `<a class="back" href="#yards">${ic('back',18)}دليل التشاليح</a>
   <div class="card pad-l" style="margin-bottom:20px"><div class="row wrap" style="align-items:flex-start;gap:18px">${yav(s,true)}
-    <div class="grow stack" style="gap:8px;min-width:240px"><div class="row wrap" style="gap:10px"><h1 style="font-family:var(--f-display);font-size:28px">${esc(s.n)}</h1>${verified(s)}</div>
-      <div class="muted small">${sellerKind(s)} · ${esc(s.city)}، ${esc(s.dist)} · في السوق من ${s.since}</div>
-      <div class="row wrap" style="gap:16px">${stars(s.rating,s.reviews)}<span class="small row" style="gap:4px">${ic('clock',15)}يرد خلال ${tMin(s.resp)}</span><span class="small row" style="gap:4px">${ic('check',15)}${fmt(s.deals)} صفقة</span></div>
+    <div class="grow stack" style="gap:8px;min-width:240px"><div class="row wrap" style="gap:10px"><h1 style="font-family:var(--f-display);font-size:28px">${esc(s.n)}</h1></div>
+      <div class="muted small">${sellerKind(s)} · ${esc(s.city)}، ${esc(s.dist)}</div>
+
       <p style="max-width:62ch">${esc(s.about)}</p><div class="mk-chips">${s.mk.map(m=>`<span>${esc(m)}</span>`).join('')}</div></div>
     <div class="stack" style="min-width:200px"><button class="btn btn-tag" data-a="reqToYard" data-id="${s.id}">${ic('send',18)}اطلب قطعة منه</button><button class="btn btn-ghost" data-a="chatSeller" data-seller="${s.id}" data-reftxt="${esc(s.n)}">${ic('chat',18)}راسله</button></div>
   </div></div>
-  <div class="seg" style="margin-bottom:18px">${[['parts',`القطع المعروضة (${parts.length})`],['donors',`سيارات وصلت (${donors.length})`],['reviews','التقييمات']].map(([v,l])=>`<button class="${tab===v?'on':''}" data-a="yTab" data-v="${v}">${l}</button>`).join('')}</div>
+  <div class="seg" style="margin-bottom:18px">${[['parts',`القطع المعروضة (${parts.length})`],['donors',`سيارات متوفرة للتشليح (${donors.length})`]].map(([v,l])=>`<button class="${tab===v?'on':''}" data-a="yTab" data-v="${v}">${l}</button>`).join('')}</div>
   ${tab==='parts'?(parts.length?`<div class="pgrid">${parts.map(p=>partCard(p)).join('')}</div>`:emptyBox('box','ما عرض قطع أونلاين للحين','أغلب مخزون التشاليح ما ينعرض. أرسل له طلب مباشر.',`<button class="btn btn-tag" data-a="reqToYard" data-id="${s.id}">اطلب منه</button>`))
-   :tab==='donors'?(donors.length?`<div class="list">${donors.map(d=>`<div class="li"><div class="th">${plate('car')}</div><div style="min-width:0"><div class="t">${esc(d[0])} ${esc(d[1])} ${d[2]}</div><div class="s">${esc(d[3])} · وصلت ${d[4]===0?'اليوم':ago(now()-d[4]*DAY)}</div></div><div class="end"><button class="btn btn-ghost btn-sm" data-a="reqToYard" data-id="${s.id}" data-car="${esc(d[0])}|${esc(d[1])}|${d[2]}">اطلب منها</button></div></div>`).join('')}</div><p class="small muted" style="margin-top:10px">كل قطع هالسيارات متاحة حتى لو ما انعرضت. اطلب القطعة اللي تبيها.</p>`:emptyBox('car','ما فيه سيارات مسجلة','',''))
-   :`<div class="stack">${REVIEWS.map(([n,t,r,d])=>`<div class="card pad stack" style="gap:6px"><div class="row between"><b>${n}</b>${stars(r)}</div><p class="small">${esc(t)}</p><span class="tiny faint">${ago(now()-d*DAY)} · عملية موثقة</span></div>`).join('')}</div>`}`;
+   :tab==='donors'?(donors.length?`<div class="list">${donors.map(d=>`<div class="li"><div class="th">${plate('car')}</div><div style="min-width:0"><div class="t">${esc(d[0])} ${esc(d[1])} ${d[2]}</div><div class="s">${esc(d[3])}</div></div><div class="end"><button class="btn btn-ghost btn-sm" data-a="reqToYard" data-id="${s.id}" data-car="${esc(d[0])}|${esc(d[1])}|${d[2]}">اطلب منها</button></div></div>`).join('')}</div><p class="small muted" style="margin-top:10px">كل قطع هالسيارات متاحة حتى لو ما انعرضت. اطلب القطعة اللي تبيها.</p>`:emptyBox('car','ما فيه سيارات مسجلة','',''))
+   :''}`;
 }
 A.yTab = el => { UI.yTab = el.dataset.v; render(true); };
 A.reqToYard = el => {
@@ -2519,7 +2471,7 @@ window.addEventListener('hashchange', ()=>{ if(!location.hash.startsWith('#reque
 route(/^account$/, vAccount);
 function vAccount(){
   const favs = S.parts.filter(p=>S.favs.includes(p.id));
-  return `<div class="page-h"><div class="row" style="gap:16px"><span class="avatar" style="width:60px;height:60px;font-size:24px">${esc(S.user.name[0])}</span><div><h1>${esc(S.user.name)}</h1><p class="sub"><span class="mono">${maskPhone(S.user.phone)}</span> · ${esc(S.user.city)}</p></div></div></div>
+  return `<div class="page-h"><div class="row" style="gap:16px"><span class="avatar" style="width:60px;height:60px;font-size:24px">${esc((S.user.name||"؟")[0])}</span><div><h1>${esc(S.user.name)}</h1><p class="sub"><span class="mono">${maskPhone(S.user.phone)}</span> · ${esc(S.user.city)}</p></div></div></div>
   <div class="layout-2">
     <div class="stack" style="gap:20px;min-width:0">
       <section class="card pad-l stack"><div class="row between"><h2 style="font-size:19px">سياراتي</h2><button class="btn btn-ghost btn-sm" data-a="addCar">${ic('plus',16)}أضف سيارة</button></div>
@@ -2530,12 +2482,13 @@ function vAccount(){
       <section class="stack"><h2 style="font-size:19px">المفضلة</h2>${favs.length?`<div class="pgrid tight">${favs.map(p=>partCard(p)).join('')}</div>`:'<p class="muted small">ما حفظت قطع.</p>'}</section>
     </div>
     <aside class="stack sticky">
-      <div class="card pad stack"><b>عناويني</b>${S.addresses.map(a=>`<div class="small"><b>${esc(a.label)}</b> · ${esc(a.city)}، ${esc(a.dist)} <span class="mono faint">${esc(a.short)}</span></div>`).join('')}<button class="btn btn-ghost btn-sm" data-a="addAddr">${ic('plus',16)}عنوان جديد</button></div>
+      <div class="card pad stack"><b>عناويني</b>${S.addresses.length?'':'<p class="small muted">ما أضفت عنوان.</p>'}${S.addresses.map(a=>`<div class="small"><b>${esc(a.label)}</b> · ${esc(a.city)}، ${esc(a.dist)} <span class="mono faint">${esc(a.short)}</span></div>`).join('')}<button class="btn btn-ghost btn-sm" data-a="addAddr">${ic('plus',16)}عنوان جديد</button></div>
       <div class="card pad stack"><b>الألوان</b><div class="skins">${[['green','أخضر وذهبي','#0D2A1F','#05704B','#E7AE3C'],['navy','كحلي وبرتقالي','#0E1D35','#0B7A5A','#FF8A3D'],['red','فحمي وأحمر','#16161A','#0E7A55','#D92D3F']].map(([v,l,a,b,c])=>`<button class="skin ${(S.skin||'green')===v?'on':''}" data-a="skin" data-v="${v}" aria-pressed="${(S.skin||'green')===v}"><span class="sw"><i style="background:${a}"></i><i style="background:${b}"></i><i style="background:${c}"></i></span>${l}</button>`).join('')}</div></div>
       <div class="card pad stack"><b>المظهر</b><div class="seg">${[['light','فاتح'],['dark','داكن'],['system','حسب الجهاز']].map(([v,l])=>`<button class="${S.theme===v?'on':''}" data-a="theme" data-v="${v}">${l}</button>`).join('')}</div></div>
-      <div class="card pad stack"><b>نوع الحساب</b><p class="small muted">حسابك مربوط بتشليح الوطن. بدّل بين الشراء وإدارة التشليح.</p><div class="seg">${[['buyer','مشتري'],['seller','تشليح']].map(([v,l])=>`<button class="${S.role===v?'on':''}" data-a="role" data-v="${v}">${l}</button>`).join('')}</div><a class="link small" href="#join">سجّل منشأة جديدة</a></div>
-      <div class="card pad stack" style="background:var(--surface-2)"><b>النموذج التجريبي</b><p class="small muted">كل البيانات هنا تجريبية وتنحفظ في متصفحك فقط. الطلبات والعروض والردود تحاكي اللي بيصير في النسخة الفعلية.</p>
-        <button class="btn btn-ghost btn-sm" data-a="reset">${ic('refresh',16)}رجّع البيانات التجريبية</button><button class="btn btn-quiet btn-sm" data-a="logout">${ic('logout',16)}تسجيل الخروج</button></div>
+      ${S.myYard?`<div class="card pad stack"><b>منشأتك</b><p class="small muted">${esc(S.myYard.n)}. بدّل بين الشراء وإدارة منشأتك.</p><div class="seg">${[['buyer','مشتري'],['seller','لوحة المنشأة']].map(([v,l])=>`<button class="${S.role===v?'on':''}" data-a="role" data-v="${v}">${l}</button>`).join('')}</div></div>`
+        :`<div class="card pad stack"><b>عندك تشليح أو محل قطع؟</b><p class="small muted">سجّل منشأتك واعرض قطعك واستقبل طلبات المشترين.</p><a class="btn btn-ghost btn-sm" href="#join">سجّل منشأتك</a></div>`}
+      <div class="card pad stack">
+        <button class="btn btn-quiet btn-sm" data-a="logout">${ic('logout',16)}تسجيل الخروج</button></div>
     </aside>
   </div>`;
 }
@@ -2556,7 +2509,7 @@ A.nTab = el => { UI.notifTab=el.dataset.v; render(true); };
 /* ═══════════ SELLER (yard) side ═══════════ */
 function incoming(){
   const me = myYard();
-  return S.requests.filter(r=>r.kind==='part' && me.mk.includes(r.car.mk) && (r.status==='open' || r.offers.some(o=>o.seller===MY_YARD))
+  return S.requests.filter(r=>r.kind==='part' && r.buyer!=='me' && me.mk.includes(r.car.mk) && (r.status==='open' || r.offers.some(o=>o.seller===MY_YARD))
     && (r.target? r.target===MY_YARD : (r.reach==='all' || (r.reach==='region' && REGION[r.city]===REGION[me.city]) || r.city===me.city || r.offers.some(o=>o.seller===MY_YARD)))
     && !(r.hiddenFor||[]).includes(MY_YARD));
 }
@@ -2584,7 +2537,7 @@ function sreqCard(r, compact){
       <div class="meta-line"><span>${ic('car',14)}${esc(r.car.mk)} ${esc(r.car.md)} ${r.car.y}</span><span>${ic('pin',14)}${esc(r.buyer==='me'?S.user.city:r.city)}</span><span>${ic('clock',14)}${ago(r.t)}</span></div>
       ${compact?'':`<div class="row wrap" style="gap:6px">${r.conds.map(c=>`<span class="cond ${c}">${COND[c]}</span>`).join('')}${r.budget?`<span class="small">ميزانيته <b class="num">${sar(r.budget)}</b></span>`:''}</div>
       ${r.notes?`<p class="small muted">«${esc(r.notes)}»</p>`:''}`}
-      <div class="small muted">${comp?`${comp} ${comp===1?'عرض منافس':comp===2?'عرضين منافسين':'عروض منافسة'}`:'ما وصله عرض للحين، كن الأول'}${r.buyer==='me'?' · <span class="pill p-tag nodot" style="height:20px">طلبك أنت (تجريبي)</span>':''}</div>
+      <div class="small muted">${comp?`${comp} ${comp===1?'عرض منافس':comp===2?'عرضين منافسين':'عروض منافسة'}`:'ما وصله عرض للحين، كن الأول'}</div>
     </div>
     <div class="offer-acts" style="min-width:${compact?'120px':'150px'}">
       ${mo?`<div>${ptag(mo.price)}</div><span class="pill ${stMap[mo.status][1]}">${stMap[mo.status][0]}</span>`
@@ -2601,7 +2554,7 @@ function vSeller(){
   const mine = S.requests.flatMap(r=>(r.offers||[]).filter(o=>o.seller===MY_YARD));
   const decided = mine.filter(o=>o.status!=='pending'); const acc = decided.length ? Math.round(decided.filter(o=>o.status==='accepted').length/decided.length*100)+'%' : '—';
   return `
-  <div class="page-h"><div class="row" style="gap:14px;align-items:flex-start">${yav(me,true)}<div><div class="row wrap" style="gap:10px"><h1>${esc(me.n)}</h1>${verified(me)}</div><p class="sub">لوحة التشليح · ${esc(me.city)}، ${esc(me.dist)} · باقة احترافية</p></div></div>
+  <div class="page-h"><div class="row" style="gap:14px;align-items:flex-start">${yav(me,true)}<div><div class="row wrap" style="gap:10px"><h1>${esc(me.n)}</h1>${me.verified?verified(me):'<span class="pill p-warn">قيد التوثيق</span>'}</div><p class="sub">${esc(me.city)}، ${esc(me.dist)} · الباقة ${planName()}</p></div></div>
     <div class="row wrap"><button class="btn btn-tag" data-a="addPart">${ic('plus',18)}أضف قطعة</button><button class="btn btn-ghost" data-a="addDonor">${ic('car',18)}أضف سيارة كاملة</button></div></div>
   <div class="kpis">
     <a class="kpi hot" href="#seller-requests"><span class="k">${ic('inbox',16)}طلبات تناسبك</span><span class="v num">${inc.length}</span><span class="d">ردّك في أول ساعة يضاعف فرصة القبول</span></a>
@@ -2618,9 +2571,9 @@ function vSeller(){
       <div class="card pad stack"><div class="row between"><b>مبيعات آخر 14 يوم</b><span class="small muted">صافي بعد العمولة</span></div>${salesBars()}
         <div class="row wrap between small"><span>هالشهر <b class="num">${sar(w.month)}</b></span><span class="muted">${sold} طلب</span></div></div>
       <div class="card pad"><div class="grid3" style="grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
-        <div><b class="num" style="font-size:20px">${me.resp}<small class="muted" style="font-size:12px"> د</small></b><div class="tiny muted">متوسط ردك</div></div>
+        <div><b class="num" style="font-size:20px">${me.resp?me.resp+' د':'—'}</b><div class="tiny muted">متوسط ردك</div></div>
         <div><b class="num" style="font-size:20px">${acc}</b><div class="tiny muted">عروضك المقبولة</div></div>
-        <div><b class="num" style="font-size:20px">${me.rating}</b><div class="tiny muted">تقييمك</div></div></div></div>
+        <div><b class="num" style="font-size:20px">${me.rating||'—'}</b><div class="tiny muted">تقييمك</div></div></div></div>
       ${todo.length?`<div class="sec-h"><div><h2 style="font-size:18px">تحتاج إجراء</h2></div></div><div class="list">${todo.map(o=>orderRow(o,true)).join('')}</div>`:''}
     </section>
   </div>`;
@@ -2763,7 +2716,7 @@ function sOrderCard(o){
   let acts = '';
   if(o.status==='paid') acts = `<button class="btn btn-ink btn-sm" data-a="sPrep" data-id="${o.id}">${ic('box',16)}بدأت التجهيز</button>`;
   else if(o.status==='preparing') acts = `<button class="btn btn-trust btn-sm" data-a="sShip" data-id="${o.id}">${ic('truck',16)}${o.deliv==='pickup'?'جاهزة للاستلام':'سلّمتها للمندوب'}</button>`;
-  else if(o.status==='delivered') acts = `<span class="small muted">مدة الفحص: باقي ${left(end)}</span>${o.buyer!=='me'?`<button class="btn btn-quiet btn-sm" data-a="sFast" data-id="${o.id}">(تجريبي) أكّد عن المشتري</button>`:''}`;
+  else if(o.status==='delivered') acts = `<span class="small muted">مدة الفحص: باقي ${left(end)}</span>`;
   else if(o.status==='disputed') acts = o.dispute&&o.dispute.reply ? '<span class="small muted">ردّك وصل لفريق المراجعة</span>' : `<button class="btn btn-danger btn-sm" data-a="sReply" data-id="${o.id}">${ic('flag',16)}رد على النزاع</button>`;
   return `<article class="offer" style="--oc:80px">
     ${plate(o.item.d)}
@@ -2798,7 +2751,7 @@ A.chatBuyer = el => { const o=findOrder(el.dataset.id); let t=S.threads.find(x=>
 route(/^seller-wallet$/, vSellerWallet);
 function vSellerWallet(){
   const w = wallet(); const heldN = myOrders().filter(o=>['paid','preparing','shipped','delivered','disputed'].includes(o.status)).length;
-  return `<div class="page-h"><div><h1>المحفظة</h1><p class="sub">باقتك احترافية: عمولة المنصة ${Math.round(S.yard.comm*100)}% من سعر القطعة فقط. التوصيل ورسوم الحماية يدفعها المشتري.</p></div></div>
+  return `<div class="page-h"><div><h1>المحفظة</h1><p class="sub">الباقة ${planName()}: عمولة المنصة ${Math.round(S.yard.comm*100)}% من سعر القطعة فقط. التوصيل ورسوم الحماية يدفعها المشتري.</p></div></div>
   <div class="kpis k3">
     <div class="kpi"><span class="k">${ic('lock',16)}محجوز لك</span><span class="v num">${fmt(w.held)} <span class="sar">⃁</span></span><span class="d">${heldN} ${heldN===1?'طلب':'طلبات'}، يتحول بعد استلام المشتري أو انتهاء مدة الفحص</span></div>
     <div class="kpi safe"><span class="k">${ic('wallet',16)}متاح للسحب</span><span class="v num">${fmt(w.avail)} <span class="sar">⃁</span></span><span class="d"><button class="btn btn-trust btn-sm" data-a="withdraw" ${w.avail<100?'disabled':''} style="margin-top:4px">اسحب للحساب البنكي</button></span></div>
@@ -2829,6 +2782,7 @@ F.iban = f => { const v=f.iban.value.replace(/\s/g,''); if(!V.iban(v)){ toast('�
 
 /* ═══════════ JOIN (seller onboarding) ═══════════ */
 route(/^join$/, vJoin, true);
+function planName(){ const p = PLANS.find(x=>x[0]===(S.yard&&S.yard.plan)); return p?p[1]:''; }
 const PLANS = [['basic','أساسية','مجاناً',9,['حتى 50 قطعة معروضة','عمولة 9% على كل بيع','الطلبات الواردة في مدينتك']],['pro','احترافية','199 ⃁ / شهر',7,['قطع غير محدودة','عمولة 7%','الطلبات من كل المنطقة','أولوية في ظهور عروضك']],['plus','مميزة','449 ⃁ / شهر',5,['كل مزايا الاحترافية','عمولة 5%','ظهور مميز في البحث','تقارير الطلب على القطع في منطقتك']]];
 function vJoin(){
   const st = UI.joinStep, J = UI.join;
@@ -2858,7 +2812,7 @@ function vJoin(){
       <div class="tl-i now"><span class="tl-d">${ic('doc',15)}</span><div><div class="tl-t">التحقق من السجل التجاري <span class="mono small">${esc(J.cr||'')}</span></div><div class="tl-s">نطابق الاسم والنشاط مع بيانات وزارة التجارة</div></div></div>
       <div class="tl-i"><span class="tl-d">${ic('bank',15)}</span><div><div class="tl-t">مطابقة الحساب البنكي</div><div class="tl-s">إيداع تجريبي بهللات نتأكد فيه من الآيبان</div></div></div>
       <div class="tl-i"><span class="tl-d">${ic('shield',15)}</span><div><div class="tl-t">تفعيل الحساب وشارة «موثّق»</div><div class="tl-s">وتبدأ توصلك الطلبات</div></div></div></div>
-    <div class="row wrap"><button class="btn btn-tag" data-a="role" data-v="seller">جرّب لوحة التشليح التجريبية</button><a class="btn btn-ghost" href="#home">الرئيسية</a></div></div></div>`;
+    <div class="row wrap"><button class="btn btn-tag" data-a="role" data-v="seller">افتح لوحة المنشأة</button><a class="btn btn-ghost" href="#home">الرئيسية</a></div></div></div>`;
   return `<div class="page-h"><div><h1>سجّل منشأتك</h1><p class="sub">تشليح أو محل قطع غيار. تحتاج السجل التجاري والآيبان، والتسجيل ياخذ خمس دقائق.</p></div></div>
   <form class="card pad-l" style="max-width:820px" data-f="join" novalidate>${head}${body}<p class="err" id="j-err" style="margin-top:12px"></p>
     <div class="row" style="margin-top:18px;gap:10px">${st>1?`<button type="button" class="btn btn-ghost" data-a="joinBack">${ic('back',18)}رجوع</button>`:''}<button class="btn btn-ink">${st===4?'أرسل الطلب':'التالي'}${st<4?ic('fwd',18):''}</button></div></form>`;
@@ -2871,12 +2825,19 @@ F.join = f => {
     if(d.name.length<3) return err('اكتب اسم المنشأة'); if(!V.cr(d.cr)) return err('رقم السجل لازم يكون 10 أرقام ويبدأ برقم من 1 إلى 7'); if(!d.dist) return err('اكتب الحي'); if(!V.phone(d.phone)) return err('رقم الجوال لازم يبدأ بـ 05 ويكون 10 أرقام'); Object.assign(J,d); }
   if(st===2){ const mk=$$('input[name=mk]:checked',f).map(x=>x.value); if(!mk.length) return err('اختر شركة وحدة على الأقل'); J.mk=mk; J.cats=$$('input[name=cats]:checked',f).map(x=>x.value); J.ship=f.ship.checked; }
   if(st===3){ const v=f.iban.value.replace(/\s/g,'').toUpperCase(); if(!f.holder.value.trim()) return err('اكتب اسم صاحب الحساب'); if(!V.iban(v)) return err('الآيبان غير صحيح. تأكد إنه 24 خانة ويبدأ بـ SA'); J.holder=f.holder.value.trim(); J.iban=v; }
-  if(st===4){ J.plan=f.plan.value; }
+  if(st===4){ J.plan=f.plan.value;
+    if(needAuth(()=>F.join(f))) return;
+    const plan = PLANS.find(p=>p[0]===J.plan);
+    S.myYard = {id:'me',n:J.name,ab:J.name.replace(/^(تشليح|تشاليح|مؤسسة|شركة|محل|مستودع)\s+/,'').trim()[0]||J.name[0],type:J.type,city:J.city,dist:J.dist,km:0,rating:0,reviews:0,resp:0,verified:false,since:new Date().getFullYear(),deals:0,mk:J.mk,about:''};
+    S.yard = {iban:J.iban, holder:J.holder, plan:J.plan, comm:plan[3]/100};
+    registerMyYard(); save();
+  }
   UI.joinStep++; render(false);
 };
 
 /* ═══════════ boot ═══════════ */
 S = load() || seedState();
+registerMyYard();
 if(S.theme!=='system') applyTheme(); else applySkin();
 render(false);
 resumeSims();
